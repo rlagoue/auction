@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "cypress ",
   "scripts": {
-    "test": "cypress run"
+    "test": "cypress run",
     "test:debug": "cypress open",
     "lint": "eslint --ext .ts,vue --ignore-path .gitignore ."
   },
