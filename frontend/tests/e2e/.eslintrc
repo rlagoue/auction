@@ -1,0 +1,14 @@
+{
+  "extends": [
+    "../../.eslintrc",
+    "plugin:cypress/recommended"
+  ],
+  "parserOptions": {
+    "ecmaVersion": 2021
+  },
+  "plugins": [
+  ],
+  "rules": {
+  }
+}
+

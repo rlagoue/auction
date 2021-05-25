@@ -1,0 +1,15 @@
+{
+  "name": "e2e",
+  "version": "1.0.0",
+  "description": "cypress ",
+  "scripts": {
+    "test": "cypress run"
+    "test:debug": "cypress open",
+    "lint": "eslint --ext .ts,vue --ignore-path .gitignore ."
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cypress": "^7.4.0"
+  }
+}
