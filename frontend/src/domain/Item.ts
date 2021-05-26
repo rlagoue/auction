@@ -10,6 +10,8 @@ export class Item {
         this.description = description;
     }
 
+    static totalCount = 0;
+
     static fromDataToDomain(item: Item) {
         return new Item(item.id, item.name, item.description);
     }

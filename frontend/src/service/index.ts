@@ -22,8 +22,13 @@ const login = async (
     return response.data;
 };
 
+type ItemsFetchResponse = {
+    totalCount: number,
+    items: Item[],
+}
+
 const fetchItems = async (pageIndex: number): Promise<Item[]> => {
-    const response  = await axiosInstance.get<Item[]>(
+    const response  = await axiosInstance.get<ItemsFetchResponse>(
         "/item",
         {
             params: {
@@ -31,7 +36,8 @@ const fetchItems = async (pageIndex: number): Promise<Item[]> => {
             }
         }
     );
-    return response.data;
+    Item.totalCount = response.data.totalCount;
+    return response.data.items;
 }
 
 export const services = {
