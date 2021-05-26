@@ -28,7 +28,51 @@ export const assertPageTitleIs = (value: string) => {
     cy.get("[data-test-id='page-title']").should("have.text", value);
 }
 
+export const goToItemDetailsIdentifiedBy = (itemId: string): any => {
+    cy.get(`[data-test-id='${itemId}' > img`);
+    cy.wait("@item-details-fetcher");
+    return {
+        assertNameIs(value: string) {
+            cy.get("[data-test-id='name']")
+                .should("contain", value);
+            return this;
+        },
+        assertDescriptionIs(value: string) {
+            cy.get("[data-test-id='description']")
+                .should("contain", value);
+            return this;
+        },
+        assertStartBidIs(value: string) {
+            cy.get("[data-test-id='startBid']")
+                .should("contain", value);
+            return this;
+        },
+        assertCurrentBidIs(value: string) {
+            cy.get("[data-test-id='currentBid']")
+                .should("contain", value);
+            return this;
+        },
+        assertBidsCountIs(value: number) {
+            cy.get("[data-test-id='bids']")
+                .children()
+                .should("have.length", value);
+            return this;
+        },
+        assertHasBid(username: string, time: string, value: string) {
+            cy.get(`[data-test-tag='bids'] > [data-test-id='${username}']`)
+                .within(() => {
+                    cy.get("[data-test-id='time']")
+                        .should("contain", time);
+                    cy.get("[data-test-id='amount']")
+                        .should("contain", value);
+                });
+            return this;
+        }
+    };
+}
+
 export const goToItemsList = (): any => {
+    cy.wait("@items-data-fetcher");
     cy.get("[data-test-id='items-list']").should('be.visible');
     return {
         assertHasEntry(id: string, name: string) {
