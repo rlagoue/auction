@@ -39,6 +39,18 @@ export const goToItemsList = (): any => {
                         .should("contain", name);
                 })
             return this
-        }
+        },
+
+        assertEntriesCountIs(expectedCount: number) {
+            cy.get("[data-test-id='items-list']")
+                .children()
+                .should("have.length", expectedCount);
+            return this;
+        },
+
+        filterByName(queryText: string) {
+            cy.get("[data-test-id='filterInputId']").type(queryText);
+            return this;
+        },
     }
 }

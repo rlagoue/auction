@@ -1,12 +1,18 @@
 <template>
   <div class="card">
-    <input class="form-input mb-4" placeholder="filter" type="text">
+    <input
+        v-model="state.queryText"
+        class="form-input mb-4"
+        data-test-id="filterInputId"
+        placeholder="filter"
+        type="text"
+    >
     <div
         class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 space-y-3"
         data-test-id="items-list"
     >
       <ItemPanel
-          v-for="item in state.items"
+          v-for="item in displayedItems"
           :key="item.id"
           :item="item"
       />
@@ -32,7 +38,7 @@
 </template>
 
 <script lang="ts">
-import {onBeforeMount, reactive, watchEffect} from "vue";
+import {computed, onBeforeMount, reactive, watchEffect} from "vue";
 import {useStore} from "../../store";
 import {Item} from "../../domain/Item";
 import ItemPanel from "../../components/ItemPanel.vue";
@@ -43,6 +49,7 @@ type State = {
   hasNext: boolean,
   hasPrevious: boolean,
   pagesCount: number,
+  queryText: string,
 }
 
 export default {
@@ -59,6 +66,17 @@ export default {
       hasNext: false,
       hasPrevious: false,
       pagesCount: 0,
+      queryText: "",
+    });
+
+    const displayedItems = computed<Item[]>(() => {
+      const queryTextToUse = state.queryText.trim().toLowerCase();
+      if (!queryTextToUse) {
+        return state.items;
+      }
+      return state.items.filter(
+          item => item.name.trim().toLowerCase().includes(queryTextToUse)
+      );
     });
 
     onBeforeMount(async () => {
@@ -79,6 +97,7 @@ export default {
       state,
       moveBefore,
       moveNext,
+      displayedItems,
     };
   }
 }
