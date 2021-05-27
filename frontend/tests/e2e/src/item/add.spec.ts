@@ -89,11 +89,18 @@ describe("Add Item as Admin", () => {
         goToItemsList();
         cy.get("[data-test-id='item-add']").click();
         assertPageTitleIs("Item Add");
-        cy.get("[data-test-id='item-add-name']").type("item-name_add");
-        cy.get("[data-test-id='item-add-description']").type("item-description_add");
-        cy.get("[data-test-id='item-add-bid']").clear().type("2");
+        const name = "item-name_add";
+        const description = "item-name_description";
+        const startBid = 2;
+        cy.get("[data-test-id='item-add-name']").type(name);
+        cy.get("[data-test-id='item-add-description']").type(description);
+        cy.get("[data-test-id='item-add-bid']").clear().type("" + startBid);
         cy.get("[data-test-id='item-add-submit']").click();
-        cy.wait("@item-add")
+        cy.wait("@item-add").should(({request}) => {
+            expect(request.body.name).to.equal(name);
+            expect(request.body.description).to.equal(description);
+            expect(request.body.startBid).to.equal(startBid);
+        });
         assertPageTitleIs("Item Details");
         goToItemDetailsIdentifiedBy("itemAddId", false)
             .assertNameIs("item-name_add")
