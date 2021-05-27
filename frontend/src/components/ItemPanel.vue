@@ -14,10 +14,10 @@
       {{item.name}}
     </div>
     <div class="text-xl font-bold">
-      $ 100
+      {{ item.getCurrentBid().toString() }}
     </div>
     <div class="text-sm">
-      $ 20
+      {{ item.getStartBid().toString() }}
     </div>
   </div>
 </template>
