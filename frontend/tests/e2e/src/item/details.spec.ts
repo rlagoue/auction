@@ -36,11 +36,17 @@ describe("Item Details as Admin", () => {
                     id: "itemId1",
                     name: "item-name_1",
                     description: "item-description_1",
-                    startBid: {
-                      value: 2,
-                      currency: "USD"
-                    },
                     bids: [
+                        {
+                            user: {
+                                username: "admin"
+                            },
+                            time: "2021-05-10T10:11:00",
+                            amount: {
+                                value: 2,
+                                currency: "USD"
+                            },
+                        },
                         {
                             user: {
                                 username: "user1",
@@ -65,15 +71,15 @@ describe("Item Details as Admin", () => {
                 })
         }).as("item-details-fetcher");
         goToItemsList();
-        assertPageTitleIs("Item Details");
         goToItemDetailsIdentifiedBy("itemId1")
             .assertNameIs("item-name_1")
-            .assertDescriptionIs("item-name_1")
-            .assertStartBidIs("$ 2.00")
-            .assertCurrentBidIs("$ 12.00")
-            .assertBidsCountIs(2)
-            .assertHasBid("user1", "19.05.2021 10:11", "$ 10.00")
-            .assertHasBid("user2", "20.05.2021 10:11", "$ 12.00");
+            .assertDescriptionIs("item-description_1")
+            .assertStartBidIs("$2.00")
+            .assertCurrentBidIs("$12.00")
+            .assertBidsCountIs(3)
+            .assertHasBid("admin", "2021-05-10T10:11:00", "$2.00")
+            .assertHasBid("user1", "2021-05-19T10:11:00", "$10.00")
+            .assertHasBid("user2", "2021-05-20T10:11:00", "$12.00");
         assertPageTitleIs("Item Details");
     });
 

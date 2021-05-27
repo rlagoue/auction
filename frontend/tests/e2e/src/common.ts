@@ -1,3 +1,5 @@
+import {useDateTimeUtils} from "../../../src/utils";
+
 export const login = (username: string) => {
     cy.intercept(
         {
@@ -28,8 +30,10 @@ export const assertPageTitleIs = (value: string) => {
     cy.get("[data-test-id='page-title']").should("have.text", value);
 }
 
+const {utcDateTimeToLocalString} = useDateTimeUtils();
+
 export const goToItemDetailsIdentifiedBy = (itemId: string): any => {
-    cy.get(`[data-test-id='${itemId}' > img`);
+    cy.get(`[data-test-id='${itemId}']`).click();
     cy.wait("@item-details-fetcher");
     return {
         assertNameIs(value: string) {
@@ -53,16 +57,17 @@ export const goToItemDetailsIdentifiedBy = (itemId: string): any => {
             return this;
         },
         assertBidsCountIs(value: number) {
-            cy.get("[data-test-id='bids']")
-                .children()
+            cy.get("[data-test-id='bids'] > tbody > tr")
                 .should("have.length", value);
             return this;
         },
         assertHasBid(username: string, time: string, value: string) {
-            cy.get(`[data-test-tag='bids'] > [data-test-id='${username}']`)
+            cy.get(`[data-test-id='bids'] > tbody > [data-test-id='${username}']`)
                 .within(() => {
+                    cy.get("[data-test-id='bidder']")
+                        .should("contain", username);
                     cy.get("[data-test-id='time']")
-                        .should("contain", time);
+                        .should("contain", utcDateTimeToLocalString(time));
                     cy.get("[data-test-id='amount']")
                         .should("contain", value);
                 });

@@ -7,7 +7,7 @@ body {
 }
 
 .card {
-    @apply p-6 bg-white rounded-md shadow-2xl;
+    @apply p-6 mr-4 bg-white rounded-md shadow-2xl;
 }
 
 .form-label {

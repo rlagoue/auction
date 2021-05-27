@@ -15,6 +15,7 @@
           v-for="item in displayedItems"
           :key="item.id"
           :item="item"
+          :data-test-id="item.id"
       />
     </div>
     <div class="my-6 flex items-center justify-center space-x-2">
@@ -105,6 +106,6 @@ export default {
 
 <style scoped>
 .nav-button {
-  @apply border border-4 p-4 rounded border-green-600;
+  @apply border border-2 p-4 rounded border-green-600;
 }
 </style>

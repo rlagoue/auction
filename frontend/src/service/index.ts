@@ -40,7 +40,15 @@ const fetchItems = async (pageIndex: number): Promise<Item[]> => {
     return response.data.items;
 }
 
+const fetchItemById = async (id: string): Promise<Item> => {
+    const response = await axiosInstance.get<Item>(
+        "/item/" + id
+    );
+    return response.data;
+}
+
 export const services = {
     login,
     fetchItems,
+    fetchItemById,
 }

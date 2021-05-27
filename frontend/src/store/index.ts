@@ -52,5 +52,9 @@ export const useStore = defineStore({
         logout() {
             this.session = null;
         },
+        async fetchItemById(id: string): Promise<Item> {
+            const item = await services.fetchItemById(id);
+            return Item.fromDataToDomain(item);
+        }
     }
 });

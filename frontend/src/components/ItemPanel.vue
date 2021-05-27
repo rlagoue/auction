@@ -1,6 +1,7 @@
 <template>
   <div
-      class="flex flex-col items-center justify-center"
+      class="flex flex-col items-center justify-center cursor-pointer hover:border-2 hover:border-green-600"
+      @click="showDetails"
       :data-test-id="item.id"
   >
     <div class="rounded-md overflow-hidden">
@@ -24,6 +25,7 @@
 <script lang="ts">
 import {defineComponent, PropType} from "vue";
 import {Item} from "../domain/Item";
+import {useRouter} from "vue-router";
 
 export default defineComponent({
   name: "ItemPanel",
@@ -33,8 +35,13 @@ export default defineComponent({
       required: true,
     }
   },
-  setup() {
+  setup(props) {
+    const router = useRouter();
+    const showDetails = () => {
+      router.push("/item-details/" + props.item.id)
+    }
     return {
+      showDetails,
     }
   },
 });
