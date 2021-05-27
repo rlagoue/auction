@@ -18,6 +18,6 @@ public class AuthResources {
     @PostMapping("/authenticate")
     @ResponseBody
     public String authenticate(@RequestBody UserDto user) {
-        return UserRepository.contains(user.getUsername()) ? "token" : "";
+        return UserRepository.contains(user.username) ? "token" : "";
     }
 }

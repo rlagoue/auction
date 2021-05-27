@@ -17,40 +17,36 @@ class AuthResourcesTest {
 
     @Test
     void authenticateAsAdminTest() {
-        final UserDto userData = new UserDto()
-                .setUsername("admin")
-                .setPassword("password");
-        final String token = objectToTest.authenticate(userData);
+        final String token = objectToTest.authenticate(
+                new UserDto("admin", "admin")
+        );
 
         assertEquals("token", token);
     }
 
     @Test
     void authenticateAsUser1Test() {
-        final UserDto userData = new UserDto()
-                .setUsername("user1")
-                .setPassword("password");
-        final String token = objectToTest.authenticate(userData);
+        final String token = objectToTest.authenticate(
+                new UserDto("user1", "password")
+        );
 
         assertEquals("token", token);
     }
 
     @Test
     void authenticateAsUser2Test() {
-        final UserDto userData = new UserDto()
-                .setUsername("user2")
-                .setPassword("password");
-        final String token = objectToTest.authenticate(userData);
+        final String token = objectToTest.authenticate(
+                new UserDto("user2", "password")
+        );
 
         assertEquals("token", token);
     }
 
     @Test
     void authenticateWithFailureTest() {
-        final UserDto userData = new UserDto()
-                .setUsername("username")
-                .setPassword("password");
-        final String token = objectToTest.authenticate(userData);
+        final String token = objectToTest.authenticate(
+                new UserDto("username", "password")
+        );
 
         assertEquals("", token);
     }
