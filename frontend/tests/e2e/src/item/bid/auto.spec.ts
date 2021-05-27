@@ -1,4 +1,4 @@
-import {assertPageTitleIs, login, logout} from "../../common"
+import {assertPageTitleIs, goToItemDetailsIdentifiedBy, goToItemsList, login, logout} from "../../common"
 
 describe("Auto bid support", () => {
     beforeEach(() => {
@@ -86,6 +86,44 @@ describe("Auto bid support", () => {
         assertPageTitleIs("Settings");
         setAutoBid(0, 50);
         setAutoBid(50, 100);
+    });
+
+    it("Activate auto bid on an item", () => {
+        cy.intercept("**/item/itemBidId1", req => {
+            req.reply(
+                {
+                    id: "itemId1",
+                    name: "item-name_1",
+                    description: "item-description_1",
+                    bids: [
+                        {
+                            user: {
+                                username: "admin"
+                            },
+                            time: "2021-05-10T10:11:00",
+                            amount: {
+                                value: 2,
+                                currency: "USD"
+                            },
+                        },
+                    ]
+                })
+        }).as("item-details-fetcher");
+        cy.intercept(
+            {
+                method: "POST",
+                url: "**/user/user4/activate-auto-bid/itemBidId1",
+            },
+            {
+                statusCode: 200,
+                body: "success",
+            }
+        ).as("activate-auto-bid");
+        goToItemsList();
+        goToItemDetailsIdentifiedBy("itemBidId1");
+        assertPageTitleIs("Item Details");
+        cy.get("[data-test-id='activate-auto-bid']").click();
+        cy.wait("@activate-auto-bid");
     });
 
 });

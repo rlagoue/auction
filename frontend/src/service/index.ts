@@ -94,6 +94,20 @@ const saveSettings = async (settings: Settings, user: User) => {
     return response.data;
 }
 
+const activateAutoBid = async (itemId: string, user: User) => {
+    const response = await axiosInstance.post(
+        "/user/" + user.username + "/activate-auto-bid/" + itemId,
+    );
+    return response.data;
+}
+
+const deactivateAutoBid = async (itemId: string, user: User) => {
+    const response = await axiosInstance.post(
+        "/user/" + user.username + "/deactivate-auto-bid/" + itemId,
+    );
+    return response.data;
+}
+
 export const services = {
     login,
     fetchItems,
@@ -102,4 +116,6 @@ export const services = {
     makeBid,
     fetchSettings,
     saveSettings,
+    activateAutoBid,
+    deactivateAutoBid,
 }

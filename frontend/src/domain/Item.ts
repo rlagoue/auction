@@ -2,23 +2,35 @@ import {Money} from "./Money";
 import {Bid} from "./Bid";
 
 export class Item {
-    static Null = new Item("", "", "");
+    static Null = new Item("", "", "", false);
     static totalCount = 0;
 
     id: string;
     name: string;
     description: string;
     bids: Bid[];
+    isAutoBidActive: boolean;
 
-    constructor(id: string, name: string, description: string) {
+    constructor(
+        id: string,
+        name: string,
+        description: string,
+        isAutoBidActive: boolean
+    ) {
         this.id = id;
         this.name = name;
         this.description = description;
+        this.isAutoBidActive = isAutoBidActive;
         this.bids = [];
     }
 
     static fromDataToDomain(data: Item) {
-        const item = new Item(data.id, data.name, data.description);
+        const item = new Item(
+            data.id,
+            data.name,
+            data.description,
+            data.isAutoBidActive
+        );
         if (data.bids) {
             item.bids = data.bids.map(bid => Bid.fromDataToDomain(bid));
         }

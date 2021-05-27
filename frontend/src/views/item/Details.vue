@@ -47,14 +47,29 @@
       <div class="uppercase text-xl font-bold pb-4">
         Bids
       </div>
-      <div>
+      <div v-if="!state.bidFormDisplayed">
         <button
-            v-if="!state.bidFormDisplayed"
-            class="nav-button font-bold uppercase my-2"
+            class="nav-button font-bold uppercase my-2 mr-2"
             data-test-id="make-bid"
             @click="startMakingBid"
         >
           Make Bid
+        </button>
+        <button
+            v-if="state.item.isAutoBidActive"
+            class="nav-button font-bold uppercase my-2"
+            data-test-id="deactivate-auto-bid"
+            @click="deactivateAutoBid"
+        >
+          Deactivate Auto Bid
+        </button>
+        <button
+            v-else
+            class="nav-button font-bold uppercase my-2"
+            data-test-id="activate-auto-bid"
+            @click="activateAutoBid"
+        >
+          Activate Auto Bid
         </button>
       </div>
       <div
@@ -137,23 +152,23 @@ type State = {
 export default {
   name: "Details",
   setup() {
+    const store = useStore();
+    const route = useRoute();
+    const itemId = route.params.id as string;
+
     const state = reactive<State>({
       item: Item.Null,
       bidFormDisplayed: false,
       displayOutbiddedErrorMessage: false,
     });
 
-    const store = useStore();
-    const route = useRoute();
-
     onBeforeMount(async () => {
       store.setCurrentPage("Item Details")
       await fetchData();
     });
 
-    const fetchData = async () => {
-      state.item = await store.fetchItemById(route.params.id as string);
-    }
+    const fetchData = async () =>
+        state.item = await store.fetchItemById(itemId);
 
     const currentBid = computed<Money>(
         () => {
@@ -187,7 +202,7 @@ export default {
 
     const makeBid = async () => {
       hideOutbiddedErroMessage();
-      const result = await store.makeBid(route.params.id, newBid.value);
+      const result = await store.makeBid(itemId, newBid.value);
       if (result === "success") {
         state.item.bids.push(
             new Bid(
@@ -208,6 +223,14 @@ export default {
     const hideOutbiddedErroMessage = () =>
         state.displayOutbiddedErrorMessage = false;
     const hideBidForm = () => state.bidFormDisplayed = false;
+    const activateAutoBid = async () => {
+      await store.activateAutoBid(itemId);
+      state.item.isAutoBidActive = true;
+    };
+    const deactivateAutoBid = async () => {
+      await store.deactivateAutoBid(itemId);
+      state.item.isAutoBidActive = false;
+    };
 
     return {
       state,
@@ -217,6 +240,8 @@ export default {
       startMakingBid,
       newBid,
       makeBid,
+      activateAutoBid,
+      deactivateAutoBid,
     }
   }
 }
