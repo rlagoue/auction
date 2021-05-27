@@ -17,9 +17,9 @@ import org.springframework.data.domain.Sort;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
 class InventoryServiceTest {
@@ -70,5 +70,19 @@ class InventoryServiceTest {
         assertEquals(10, itemFetchDto.items.size());
         assertTrue(itemFetchDto.items.stream().anyMatch(item -> item.id == itemId1));
         assertTrue(itemFetchDto.items.stream().anyMatch(item -> item.id == itemId2));
+    }
+
+    @Test
+    void getItemByIdTest() {
+        final long itemId = 2;
+
+        Item item = Mockito.mock(Item.class);
+        Mockito.when(itemRepository.findById(itemId)).thenReturn(Optional.of(item));
+        ItemDto expectedItemDto = Mockito.mock(ItemDto.class);
+        Mockito.when(item.toDto()).thenReturn(expectedItemDto);
+
+        final ItemDto itemDto = objectToTest.getItemById(itemId);
+
+        assertSame(expectedItemDto, itemDto);
     }
 }

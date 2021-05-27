@@ -48,4 +48,18 @@ class InventoryResourceTest {
         assertTrue(itemFetchDto.items.stream().anyMatch(item -> item.id == itemId1));
         assertTrue(itemFetchDto.items.stream().anyMatch(item -> item.id == itemId2));
     }
+
+    @Test
+    void getItemByIdTest() {
+        final long itemId = 1;
+
+        ItemDto expectedItemDto = new ItemDto();
+        expectedItemDto.id = itemId;
+
+        Mockito.when(inventoryService.getItemById(itemId)).thenReturn(expectedItemDto);
+
+        final ItemDto itemDto = objectToTest.getItemById(itemId);
+
+        assertEquals(itemId, itemDto.id);
+    }
 }

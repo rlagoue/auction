@@ -1,9 +1,14 @@
 package com.scopic.auction.dto;
 
+
+import java.util.ArrayList;
+import java.util.List;
+
 public class ItemDto {
     public long id;
     public String name;
     public String description;
+    public List<BidDto> bids = new ArrayList<>();
 
     public ItemDto() {
     }

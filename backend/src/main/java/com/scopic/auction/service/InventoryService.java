@@ -1,6 +1,7 @@
 package com.scopic.auction.service;
 
 import com.scopic.auction.domain.Item;
+import com.scopic.auction.dto.ItemDto;
 import com.scopic.auction.dto.ItemFetchDto;
 import com.scopic.auction.repository.ItemRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,5 +39,10 @@ public class InventoryService {
                         .map(Item::toDto)
                         .collect(Collectors.toList())
         );
+    }
+
+    @Transactional
+    public ItemDto getItemById(long itemId) {
+        return itemRepository.findById(itemId).map(item -> item.toDto()).orElse(null);
     }
 }

@@ -18,7 +18,7 @@ class AuthResourcesTest {
     @Test
     void authenticateAsAdminTest() {
         final String token = objectToTest.authenticate(
-                new UserDto("admin", "admin")
+                new UserDto("admin")
         );
 
         assertEquals("token", token);
@@ -27,7 +27,7 @@ class AuthResourcesTest {
     @Test
     void authenticateAsUser1Test() {
         final String token = objectToTest.authenticate(
-                new UserDto("user1", "password")
+                new UserDto("user1")
         );
 
         assertEquals("token", token);
@@ -36,7 +36,7 @@ class AuthResourcesTest {
     @Test
     void authenticateAsUser2Test() {
         final String token = objectToTest.authenticate(
-                new UserDto("user2", "password")
+                new UserDto("user2")
         );
 
         assertEquals("token", token);
@@ -45,7 +45,7 @@ class AuthResourcesTest {
     @Test
     void authenticateWithFailureTest() {
         final String token = objectToTest.authenticate(
-                new UserDto("username", "password")
+                new UserDto("username")
         );
 
         assertEquals("", token);
