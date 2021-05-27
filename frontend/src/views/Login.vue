@@ -58,6 +58,7 @@ export default defineComponent({
     const router = useRouter();
 
     const trySubmit = async () => {
+      state.errors.length = 0;
       if (!state.username) {
         state.errors.push("Username is required");
       }

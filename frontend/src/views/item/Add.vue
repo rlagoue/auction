@@ -69,6 +69,7 @@ export default defineComponent({
     });
 
     const trySubmit = async () => {
+      state.errors.length = 0;
       if (!state.name) {
         state.errors.push("Name is required");
       }

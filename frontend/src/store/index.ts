@@ -3,6 +3,7 @@ import {Session} from "../domain/Session";
 import {services} from "../service";
 import {Item} from "../domain/Item";
 import {User} from "../domain/User";
+import {Settings} from "../domain/Settings";
 
 export interface State {
     publicRoutes: string[],
@@ -48,9 +49,6 @@ export const useStore = defineStore({
         nextAfterLogin(path: string) {
             this.whereToGoAfterLogin = path;
         },
-        clearNextAfterLogin() {
-            this.whereToGoAfterLogin = "";
-        },
         async signIn(username: string, password: string): Promise<any> {
             const token = await services.login(username, password);
             this.session = new Session(username, token);
@@ -70,16 +68,20 @@ export const useStore = defineStore({
             return Item.fromDataToDomain(item);
         },
         async addItem(name: string, description: string, startBid: number): Promise<string> {
-            const newItemId = await services.addItem(name, description, startBid);
-            return newItemId;
+            return await services.addItem(name, description, startBid);
         },
         async makeBid(itemId: string, bidValue: number): Promise<string> {
-            const result = await services.makeBid(
+            return await services.makeBid(
                 this.currentUser,
                 itemId,
                 bidValue
             );
-            return result;
-        }
+        },
+        async fetchSettings(): Promise<Settings> {
+            return await services.fetchSettings(this.currentUser);
+        },
+        async saveSettings(settings: Settings): Promise<void> {
+            await services.saveSettings(settings, this.currentUser);
+        },
     }
 });

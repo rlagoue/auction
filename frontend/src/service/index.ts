@@ -1,6 +1,7 @@
 import axios from "axios";
 import {Item} from "../domain/Item";
 import {User} from "../domain/User";
+import {Settings} from "../domain/Settings";
 
 const axiosInstance = axios.create({
     baseURL: <string>import.meta.env.VITE_REST_API_BASE_URL
@@ -75,10 +76,30 @@ const makeBid = async (
     return response.data;
 }
 
+
+const fetchSettings = async (user: User): Promise<Settings> => {
+    const response = await axiosInstance.get<Settings>(
+        "/user/" + user.username + "/settings"
+    );
+    return response.data;
+}
+
+const saveSettings = async (settings: Settings, user: User) => {
+    const response = await axiosInstance.put(
+        "/user/" + user.username + "/settings",
+        {
+            maxBidAmount: settings.maxBidAmount,
+        },
+    );
+    return response.data;
+}
+
 export const services = {
     login,
     fetchItems,
     fetchItemById,
     addItem,
     makeBid,
+    fetchSettings,
+    saveSettings,
 }

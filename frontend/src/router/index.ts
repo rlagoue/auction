@@ -27,6 +27,11 @@ const routes = [
               name: "itemAdd",
               component: () => import("../views/item/Add.vue"),
           },
+          {
+              path: "/auto-bid-settings",
+              name: "autoBidSettings",
+              component: () => import("../views/Settings.vue"),
+          },
       ],
     },
 ];
