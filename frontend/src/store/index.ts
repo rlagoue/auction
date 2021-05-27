@@ -2,6 +2,7 @@ import {defineStore} from "pinia";
 import {Session} from "../domain/Session";
 import {services} from "../service";
 import {Item} from "../domain/Item";
+import {User} from "../domain/User";
 
 export interface State {
     publicRoutes: string[],
@@ -29,6 +30,18 @@ export const useStore = defineStore({
         },
         title(): string {
             return this.currentPage.title;
+        },
+        isAdmin(): boolean {
+            if (!this.session) {
+                return false;
+            }
+            return this.session.isAdmin();
+        },
+        currentUser(): User {
+            if (!this.session) {
+                return User.Null;
+            }
+            return new User(this.session.username);
         }
     },
     actions: {
@@ -55,6 +68,10 @@ export const useStore = defineStore({
         async fetchItemById(id: string): Promise<Item> {
             const item = await services.fetchItemById(id);
             return Item.fromDataToDomain(item);
+        },
+        async addItem(name: string, description: string, startBid: number): Promise<string> {
+            const newItemId = await services.addItem(name, description, startBid);
+            return newItemId;
         }
     }
 });

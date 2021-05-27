@@ -1,5 +1,13 @@
 <template>
   <div class="card">
+    <button
+        v-if="isAdmin"
+        class="nav-button font-bold uppercase my-2"
+        @click="startAddingItem"
+        data-test-id="item-add"
+    >
+      Add Item
+    </button>
     <input
         v-model="state.queryText"
         class="form-input mb-4"
@@ -43,6 +51,7 @@ import {computed, onBeforeMount, reactive, watchEffect} from "vue";
 import {useStore} from "../../store";
 import {Item} from "../../domain/Item";
 import ItemPanel from "../../components/ItemPanel.vue";
+import router from "../../router";
 
 type State = {
   items: Item[],
@@ -94,11 +103,17 @@ export default {
     const moveBefore = () => state.currentPageIndex--;
     const moveNext = () => state.currentPageIndex++;
 
+    const isAdmin = computed<boolean>(() => store.isAdmin);
+
+    const startAddingItem = () => router.push("/item-add");
+
     return {
       state,
       moveBefore,
       moveNext,
       displayedItems,
+      isAdmin,
+      startAddingItem,
     };
   }
 }

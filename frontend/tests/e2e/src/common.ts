@@ -32,8 +32,10 @@ export const assertPageTitleIs = (value: string) => {
 
 const {utcDateTimeToLocalString} = useDateTimeUtils();
 
-export const goToItemDetailsIdentifiedBy = (itemId: string): any => {
-    cy.get(`[data-test-id='${itemId}']`).click();
+export const goToItemDetailsIdentifiedBy = (itemId: string, withClick = true): any => {
+    if (withClick) {
+        cy.get(`[data-test-id='${itemId}']`).click();
+    }
     cy.wait("@item-details-fetcher");
     return {
         assertNameIs(value: string) {

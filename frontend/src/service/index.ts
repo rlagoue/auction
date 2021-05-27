@@ -25,10 +25,10 @@ const login = async (
 type ItemsFetchResponse = {
     totalCount: number,
     items: Item[],
-}
+};
 
 const fetchItems = async (pageIndex: number): Promise<Item[]> => {
-    const response  = await axiosInstance.get<ItemsFetchResponse>(
+    const response = await axiosInstance.get<ItemsFetchResponse>(
         "/item",
         {
             params: {
@@ -38,17 +38,30 @@ const fetchItems = async (pageIndex: number): Promise<Item[]> => {
     );
     Item.totalCount = response.data.totalCount;
     return response.data.items;
-}
+};
 
 const fetchItemById = async (id: string): Promise<Item> => {
     const response = await axiosInstance.get<Item>(
         "/item/" + id
     );
     return response.data;
-}
+};
+
+const addItem = async (name: string, description: string, startBid: number): Promise<string> => {
+    const response = await axiosInstance.post<string>(
+        "/item",
+        {
+            name,
+            description,
+            startBid,
+        }
+    )
+    return response.data;
+};
 
 export const services = {
     login,
     fetchItems,
     fetchItemById,
+    addItem,
 }

@@ -6,4 +6,6 @@ export class Session {
         this.username = username;
         this.token = token;
     }
+
+    isAdmin = (): boolean => this.username === "admin";
 }
