@@ -16,15 +16,15 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
-class InventoryResourceTest {
+class InventoryResourcesTest {
 
-    private InventoryResource objectToTest;
+    private InventoryResources objectToTest;
     @Mock
     private InventoryService inventoryService;
 
     @BeforeEach
     void setUp() {
-        objectToTest = new InventoryResource(inventoryService);
+        objectToTest = new InventoryResources(inventoryService);
     }
 
     @Test

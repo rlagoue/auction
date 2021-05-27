@@ -11,12 +11,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
-public class InventoryResource {
+public class InventoryResources {
 
     private final InventoryService inventoryService;
 
     @Autowired
-    public InventoryResource(InventoryService inventoryService) {
+    public InventoryResources(InventoryService inventoryService) {
         this.inventoryService = inventoryService;
     }
 
