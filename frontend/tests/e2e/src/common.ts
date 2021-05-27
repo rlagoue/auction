@@ -30,7 +30,7 @@ export const assertPageTitleIs = (value: string) => {
     cy.get("[data-test-id='page-title']").should("have.text", value);
 }
 
-const {utcDateTimeToLocalString} = useDateTimeUtils();
+const {utcDateTimeToLocalString, formatDate} = useDateTimeUtils();
 
 export const goToItemDetailsIdentifiedBy = (itemId: string, withClick = true): any => {
     if (withClick) {
@@ -63,13 +63,14 @@ export const goToItemDetailsIdentifiedBy = (itemId: string, withClick = true): a
                 .should("have.length", value);
             return this;
         },
-        assertHasBid(username: string, time: string, value: string) {
+        assertHasBid(username: string, time: string, value: string, isLocalTime = false) {
             cy.get(`[data-test-id='bids'] > tbody > [data-test-id='${username}']`)
                 .within(() => {
                     cy.get("[data-test-id='bidder']")
                         .should("contain", username);
+                    const timeToUse = isLocalTime ? formatDate(time) : utcDateTimeToLocalString(time);
                     cy.get("[data-test-id='time']")
-                        .should("contain", utcDateTimeToLocalString(time));
+                        .should("contain", timeToUse);
                     cy.get("[data-test-id='amount']")
                         .should("contain", value);
                 });

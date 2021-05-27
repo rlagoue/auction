@@ -1,9 +1,16 @@
-import {assertPageTitleIs, goToItemDetailsIdentifiedBy, goToItemsList, login, logout} from "../../common"
+import {
+    assertPageTitleIs,
+    goToItemDetailsIdentifiedBy,
+    goToItemsList,
+    login,
+    logout
+} from "../../common"
+import moment from "moment";
 
 describe("Make a bid", () => {
     beforeEach(() => {
         cy.visit("/");
-        login("user1");
+        login("user3");
     });
 
     afterEach(() => {
@@ -18,9 +25,9 @@ describe("Make a bid", () => {
                     items:
                         [
                             {
-                                id: "itemId1",
-                                name: "item-name_1",
-                                description: "item-description_1",
+                                id: "itemBidId1",
+                                name: "itemBid-name_1",
+                                description: "itemBid-description_1",
                                 bids: [
                                     {
                                         user: {
@@ -55,9 +62,9 @@ describe("Make a bid", () => {
                                 ],
                             },
                             {
-                                id: "itemId2",
-                                name: "item-name_2",
-                                description: "item-description_2",
+                                id: "itemBidId2",
+                                name: "itemBid-name_2",
+                                description: "itemBid-description_2",
                                 bids: [
                                     {
                                         user: {
@@ -94,12 +101,12 @@ describe("Make a bid", () => {
                         ]
                 })
         }).as("items-data-fetcher");
-        cy.intercept("**/item/itemId1", req => {
+        cy.intercept("**/item/itemBidId1", req => {
             req.reply(
                 {
-                    id: "itemId1",
-                    name: "item-name_1",
-                    description: "item-description_1",
+                    id: "itemBidId1",
+                    name: "itemBid-name_1",
+                    description: "itemBid-description_1",
                     bids: [
                         {
                             user: {
@@ -135,11 +142,20 @@ describe("Make a bid", () => {
                 }
             )
         }).as("item-details-fetcher");
-        cy.intercept()
+        cy.intercept(
+            {
+                method: "POST",
+                url: "**/item/itemBidId1/bid",
+            },
+            {
+                statusCode: 200,
+                body: "success"
+            },
+        ).as("item-bid");
         goToItemsList();
-        goToItemDetailsIdentifiedBy("itemId1")
-            .assertNameIs("item-name_1")
-            .assertDescriptionIs("item-description_1")
+        const page = goToItemDetailsIdentifiedBy("itemBidId1")
+            .assertNameIs("itemBid-name_1")
+            .assertDescriptionIs("itemBid-description_1")
             .assertStartBidIs("$2.00")
             .assertCurrentBidIs("$12.00")
             .assertBidsCountIs(3)
@@ -147,6 +163,24 @@ describe("Make a bid", () => {
             .assertHasBid("user1", "2021-05-19T10:11:00", "$10.00")
             .assertHasBid("user2", "2021-05-20T10:11:00", "$12.00");
         assertPageTitleIs("Item Details");
+        cy.get("[data-test-id='make-bid']").click();
+        const bid = 14;
+        cy.get("[data-test-id='make-bid-input']").should("have.value", "13");
+        cy.get("[data-test-id='make-bid-input']").clear().type("" + bid);
+        cy.get("[data-test-id='make-bid-submit']").click();
+        cy.wait("@item-bid").should(({request}) => {
+            expect(request.body.user.username).to.equal("user3");
+            expect(request.body.bid).to.equal(bid + "");
+        });
+        page.assertNameIs("itemBid-name_1")
+            .assertDescriptionIs("itemBid-description_1")
+            .assertStartBidIs("$2.00")
+            .assertCurrentBidIs("$14.00")
+            .assertBidsCountIs(4)
+            .assertHasBid("admin", "2021-05-10T10:11:00", "$2.00")
+            .assertHasBid("user1", "2021-05-19T10:11:00", "$10.00")
+            .assertHasBid("user2", "2021-05-20T10:11:00", "$12.00")
+            .assertHasBid("user3", moment().format(), "$14.00", true);
     });
 
 });

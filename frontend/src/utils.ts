@@ -16,8 +16,27 @@ export function useDateTimeUtils() {
         return moment.utc(value).local();
     };
 
+    const formatDate = (value: MomentInput, pattern = "DD.MM.YYYY HH:mm"): string => {
+        if (!value) {
+            return "-";
+        }
+        return moment(value).format(pattern);
+    }
+
+    const localDateToUtc = (value: MomentInput, pattern = "YYYY-MM-DDTHH:mm:ss"): string => {
+        if (!value) {
+            return "";
+        }
+        return moment(value, pattern)
+            .utc()
+            .format(pattern);
+    };
+
+
     return {
         utcDateTimeToLocalString,
+        formatDate,
+        localDateToUtc,
     }
 
 }

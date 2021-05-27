@@ -28,7 +28,7 @@
               class=""
               data-test-id="currentBid"
           >
-            {{ currentBid }}
+            {{ currentBidAsString }}
           </div>
           <div class="form-label">Start Bid</div>
           <div
@@ -47,6 +47,32 @@
       <div class="uppercase text-xl font-bold pb-4">
         Bids
       </div>
+      <button
+          v-if="!state.bidFormDisplayed"
+          class="nav-button font-bold uppercase my-2"
+          data-test-id="make-bid"
+          @click="startMakingBid"
+      >
+        Make Bid
+      </button>
+      <div
+          v-if="state.bidFormDisplayed"
+          class="flex items-center justify-center space-x-4"
+      >
+        <input
+            v-model="newBid"
+            class="form-input"
+            data-test-id="make-bid-input"
+            type="number"
+        >
+        <button
+            class="nav-button font-bold uppercase my-2"
+            data-test-id="make-bid-submit"
+            @click="makeBid"
+        >
+          Submit
+        </button>
+      </div>
       <table
           class="w-full text-center"
           data-test-id='bids'
@@ -62,8 +88,8 @@
         <tr
             v-for="bid in state.item.bids"
             :key="bid"
-            class="my-10 py-10"
             :data-test-id="bid.user.username"
+            class="my-10 py-10"
         >
           <td data-test-id="bidder">
             {{ bid.user.username }}
@@ -82,15 +108,18 @@
 </template>
 
 <script lang="ts">
-import {computed, onBeforeMount, reactive} from "vue";
+import {computed, onBeforeMount, reactive, ref} from "vue";
 import {Item} from "../../domain/Item";
 import {useStore} from "../../store";
 import {useRoute} from "vue-router";
 import {Money} from "../../domain/Money";
 import {useDateTimeUtils} from "../../utils";
+import {Bid} from "../../domain/Bid";
+import {Currency} from "../../domain/Currency";
 
 type State = {
   item: Item,
+  bidFormDisplayed: boolean,
 }
 
 export default {
@@ -98,6 +127,7 @@ export default {
   setup() {
     const state = reactive<State>({
       item: Item.Null,
+      bidFormDisplayed: false,
     });
 
     const store = useStore();
@@ -106,15 +136,19 @@ export default {
     onBeforeMount(async () => {
       store.setCurrentPage("Item Details")
       state.item = await store.fetchItemById(route.params.id as string);
-    })
+    });
 
-    const currentBid = computed<string>(
+    const currentBid = computed<Money>(
         () => {
           if (state.item.isNull()) {
-            return Money.Null.toString();
+            return Money.Null;
           }
-          return state.item.getCurrentBid().toString();
+          return state.item.getCurrentBid();
         }
+    );
+
+    const currentBidAsString = computed<string>(
+        () => currentBid.value.toString()
     );
 
     const startBid = computed<string>(
@@ -126,13 +160,36 @@ export default {
         }
     );
 
-    const {utcDateTimeToLocalString} = useDateTimeUtils();
+    const newBid = ref(0);
+    const startMakingBid = () => {
+      state.bidFormDisplayed = true;
+      newBid.value = Math.floor(currentBid.value.value) + 1;
+    };
+
+    const {utcDateTimeToLocalString, localDateToUtc} = useDateTimeUtils();
+
+    const makeBid = async () => {
+      const result = await store.makeBid(route.params.id, newBid.value);
+      if (result === "success") {
+        state.item.bids.push(
+            new Bid(
+                store.currentUser,
+                localDateToUtc(new Date()),
+                new Money(newBid.value, Currency.USD)
+            )
+        );
+      }
+
+    };
 
     return {
       state,
-      currentBid,
+      currentBidAsString,
       startBid,
       utcDateTimeToLocalString,
+      startMakingBid,
+      newBid,
+      makeBid,
     }
   }
 }

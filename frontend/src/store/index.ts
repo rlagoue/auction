@@ -72,6 +72,14 @@ export const useStore = defineStore({
         async addItem(name: string, description: string, startBid: number): Promise<string> {
             const newItemId = await services.addItem(name, description, startBid);
             return newItemId;
+        },
+        async makeBid(itemId: string, bidValue: number): Promise<string> {
+            const result = await services.makeBid(
+                this.currentUser,
+                itemId,
+                bidValue
+            );
+            return result;
         }
     }
 });

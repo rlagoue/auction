@@ -17,3 +17,7 @@ body {
 .form-input {
     @apply w-full h-12 mt-2 p-2 bg-white text-gray-800 border border-gray-200 focus:border-green-500 focus-within:border-green-500 rounded-md outline-none
 }
+
+.nav-button {
+    @apply border border-2 p-4 rounded border-green-600;
+}

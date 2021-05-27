@@ -120,7 +120,4 @@ export default {
 </script>
 
 <style scoped>
-.nav-button {
-  @apply border border-2 p-4 rounded border-green-600;
-}
 </style>

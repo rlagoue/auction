@@ -1,5 +1,6 @@
 import axios from "axios";
 import {Item} from "../domain/Item";
+import {User} from "../domain/User";
 
 const axiosInstance = axios.create({
     baseURL: <string>import.meta.env.VITE_REST_API_BASE_URL
@@ -59,9 +60,25 @@ const addItem = async (name: string, description: string, startBid: number): Pro
     return response.data;
 };
 
+const makeBid = async (
+    user: User,
+    itemId: string,
+    bid: number
+): Promise<string> => {
+    const response = await axiosInstance.post<string>(
+        "/item/" + itemId + "/bid",
+        {
+            user,
+            bid,
+        }
+    );
+    return response.data;
+}
+
 export const services = {
     login,
     fetchItems,
     fetchItemById,
     addItem,
+    makeBid,
 }
