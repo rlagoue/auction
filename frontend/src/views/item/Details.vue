@@ -47,14 +47,16 @@
       <div class="uppercase text-xl font-bold pb-4">
         Bids
       </div>
-      <button
-          v-if="!state.bidFormDisplayed"
-          class="nav-button font-bold uppercase my-2"
-          data-test-id="make-bid"
-          @click="startMakingBid"
-      >
-        Make Bid
-      </button>
+      <div>
+        <button
+            v-if="!state.bidFormDisplayed"
+            class="nav-button font-bold uppercase my-2"
+            data-test-id="make-bid"
+            @click="startMakingBid"
+        >
+          Make Bid
+        </button>
+      </div>
       <div
           v-if="state.bidFormDisplayed"
           class="flex items-center justify-center space-x-4"
@@ -72,6 +74,15 @@
         >
           Submit
         </button>
+      </div>
+      <div class="flex center-items justify-center">
+        <span
+            v-if="state.displayOutbiddedErrorMessage"
+            class="text-2xl text-red-700 font-bold"
+            data-test-id="make-bid-error-message"
+        >
+          !!!You have been outbidded!!!
+        </span>
       </div>
       <table
           class="w-full text-center"
@@ -120,6 +131,7 @@ import {Currency} from "../../domain/Currency";
 type State = {
   item: Item,
   bidFormDisplayed: boolean,
+  displayOutbiddedErrorMessage: boolean,
 }
 
 export default {
@@ -128,6 +140,7 @@ export default {
     const state = reactive<State>({
       item: Item.Null,
       bidFormDisplayed: false,
+      displayOutbiddedErrorMessage: false,
     });
 
     const store = useStore();
@@ -135,8 +148,12 @@ export default {
 
     onBeforeMount(async () => {
       store.setCurrentPage("Item Details")
-      state.item = await store.fetchItemById(route.params.id as string);
+      await fetchData();
     });
+
+    const fetchData = async () => {
+      state.item = await store.fetchItemById(route.params.id as string);
+    }
 
     const currentBid = computed<Money>(
         () => {
@@ -169,6 +186,7 @@ export default {
     const {utcDateTimeToLocalString, localDateToUtc} = useDateTimeUtils();
 
     const makeBid = async () => {
+      hideOutbiddedErroMessage();
       const result = await store.makeBid(route.params.id, newBid.value);
       if (result === "success") {
         state.item.bids.push(
@@ -178,9 +196,18 @@ export default {
                 new Money(newBid.value, Currency.USD)
             )
         );
+      } else if (result === "outbidded") {
+        displayOutbiddedErroMessage();
+        hideBidForm();
+        await fetchData();
       }
 
     };
+    const displayOutbiddedErroMessage = () =>
+        state.displayOutbiddedErrorMessage = true;
+    const hideOutbiddedErroMessage = () =>
+        state.displayOutbiddedErrorMessage = false;
+    const hideBidForm = () => state.bidFormDisplayed = false;
 
     return {
       state,
