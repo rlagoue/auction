@@ -16,7 +16,10 @@ public class Bid {
     @JoinColumn(name = "c_item", referencedColumnName = "c_id")
     private Item item;
     @Embedded
-    @Column(name = "c_username")
+    @AttributeOverride(
+            name = "username",
+            column = @Column(name = "c_username", table = "t_bid")
+    )
     private User user;
     @Column(name = "c_time")
     private LocalDateTime time;
