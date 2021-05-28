@@ -12,8 +12,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(MockitoExtension.class)
 class InventoryResourcesTest {
@@ -29,14 +31,11 @@ class InventoryResourcesTest {
 
     @Test
     void getItemsTest() {
-        long itemId1 = 1;
-        long itemId2 = 2;
-
         final int pageIndex = 1;
         final int totalCount = 100;
         List<ItemDto> items = new ArrayList<>();
-        for (int i =1 ; i <= 10; i++) {
-            items.add(new ItemDto(i));
+        for (int i = 1; i <= 10; i++) {
+            items.add(Mockito.mock(ItemDto.class));
         }
         Mockito.when(inventoryService.getItems(pageIndex))
                 .thenReturn(new ItemFetchDto(totalCount, items));
@@ -45,13 +44,12 @@ class InventoryResourcesTest {
 
         assertEquals(totalCount, itemFetchDto.totalCount);
         assertEquals(10, itemFetchDto.items.size());
-        assertTrue(itemFetchDto.items.stream().anyMatch(item -> item.id == itemId1));
-        assertTrue(itemFetchDto.items.stream().anyMatch(item -> item.id == itemId2));
+        assertTrue(itemFetchDto.items.stream().allMatch(item -> item instanceof ItemDto));
     }
 
     @Test
     void getItemByIdTest() {
-        final long itemId = 1;
+        final String itemId = UUID.randomUUID().toString();
 
         ItemDto expectedItemDto = new ItemDto();
         expectedItemDto.id = itemId;

@@ -28,7 +28,7 @@ public class InventoryResources {
 
     @GetMapping("/item/{id}")
     @ResponseBody
-    public ItemDto getItemById(@PathVariable("id") long id) {
+    public ItemDto getItemById(@PathVariable("id") String id) {
         return inventoryService.getItemById(id);
     }
 }

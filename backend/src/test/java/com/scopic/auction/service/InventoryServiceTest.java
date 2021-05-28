@@ -18,6 +18,7 @@ import org.springframework.data.domain.Sort;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -35,53 +36,52 @@ class InventoryServiceTest {
 
     @Test
     void getItemsTest() {
-        long itemId1 = 1;
-        long itemId2 = 2;
-
         final int pageIndex = 1;
         List<Item> items = new ArrayList<>();
         for (int i = 1; i <= 10; i++) {
             final Item item = Mockito.mock(Item.class);
-            Mockito.when(item.toDto()).thenReturn(new ItemDto(i));
+            Mockito.when(item.toDto()).thenReturn(Mockito.mock(ItemDto.class));
             items.add(item);
         }
 
         PageRequest pageable = Mockito.mock(PageRequest.class);
 
-        final MockedStatic<PageRequest> mockedStaticPageRequest = Mockito.mockStatic(
+        try (final MockedStatic<PageRequest> mockedStaticPageRequest = Mockito.mockStatic(
                 PageRequest.class
-        );
-        mockedStaticPageRequest.when(() -> PageRequest.of(
-                pageIndex,
-                10,
-                Sort.by(Sort.Direction.DESC, "id")
-        )).thenReturn(pageable);
+        )) {
+            mockedStaticPageRequest.when(() -> PageRequest.of(
+                    pageIndex,
+                    10,
+                    Sort.by(Sort.Direction.DESC, "time")
+            )).thenReturn(pageable);
 
-        final Page<Item> page = Mockito.mock(Page.class);
-        final long totalCount = 100L;
-        Mockito.when(page.getTotalElements()).thenReturn(totalCount);
-        Mockito.when(page.getContent()).thenReturn(items);
 
-        Mockito.when(itemRepository.findAll(pageable)).thenReturn(page);
+            final Page<Item> page = Mockito.mock(Page.class);
+            final long totalCount = 100L;
+            Mockito.when(page.getTotalElements()).thenReturn(totalCount);
+            Mockito.when(page.getContent()).thenReturn(items);
 
-        final ItemFetchDto itemFetchDto = objectToTest.getItems(pageIndex);
+            Mockito.when(itemRepository.findAll(pageable)).thenReturn(page);
 
-        assertEquals(totalCount, itemFetchDto.totalCount);
-        assertEquals(10, itemFetchDto.items.size());
-        assertTrue(itemFetchDto.items.stream().anyMatch(item -> item.id == itemId1));
-        assertTrue(itemFetchDto.items.stream().anyMatch(item -> item.id == itemId2));
+            final ItemFetchDto itemFetchDto = objectToTest.getItems(pageIndex);
+
+            assertEquals(totalCount, itemFetchDto.totalCount);
+            assertEquals(10, itemFetchDto.items.size());
+            assertTrue(itemFetchDto.items.stream().allMatch(item -> item instanceof ItemDto));
+        }
     }
 
     @Test
     void getItemByIdTest() {
-        final long itemId = 2;
+        final UUID itemId = UUID.randomUUID();
+        final String itemIdAsString = itemId.toString();
 
         Item item = Mockito.mock(Item.class);
         Mockito.when(itemRepository.findById(itemId)).thenReturn(Optional.of(item));
         ItemDto expectedItemDto = Mockito.mock(ItemDto.class);
         Mockito.when(item.toDto()).thenReturn(expectedItemDto);
 
-        final ItemDto itemDto = objectToTest.getItemById(itemId);
+        final ItemDto itemDto = objectToTest.getItemById(itemIdAsString);
 
         assertSame(expectedItemDto, itemDto);
     }

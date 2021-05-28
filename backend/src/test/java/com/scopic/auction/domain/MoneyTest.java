@@ -6,8 +6,7 @@ import org.junit.jupiter.api.Test;
 import java.util.Currency;
 
 import static com.scopic.auction.utils.Whitebox.getFieldValue;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 class MoneyTest {
     Money objectToTest;
@@ -247,5 +246,10 @@ class MoneyTest {
         assertEquals(expectedFractionDigits, moneyDto.defaultFractionDigits);
     }
 
-
+    @Test
+    void isBiggerThanTest() {
+        objectToTest = new Money(15d, "USD");
+        assertTrue(objectToTest.isBiggerThan(new Money(10d, "USD")));
+        assertFalse(objectToTest.isBiggerThan(new Money(20d, "USD")));
+    }
 }

@@ -129,4 +129,8 @@ public class Money {
                 defaultFractionDigits
         );
     }
+
+    public boolean isBiggerThan(Money amount) {
+        return this.value >= amount.value;
+    }
 }

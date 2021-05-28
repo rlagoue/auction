@@ -11,6 +11,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,7 +30,7 @@ public class InventoryService {
                 PageRequest.of(
                         pageIndex,
                         10,
-                        Sort.by(Sort.Direction.DESC, "id")
+                        Sort.by(Sort.Direction.DESC, "time")
                 )
         );
         return new ItemFetchDto(
@@ -42,7 +43,9 @@ public class InventoryService {
     }
 
     @Transactional
-    public ItemDto getItemById(long itemId) {
-        return itemRepository.findById(itemId).map(item -> item.toDto()).orElse(null);
+    public ItemDto getItemById(String itemId) {
+        return itemRepository.findById(UUID.fromString(itemId))
+                .map(item -> item.toDto())
+                .orElse(null);
     }
 }

@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ItemDto {
-    public long id;
+    public String id;
     public String name;
     public String description;
     public List<BidDto> bids = new ArrayList<>();
@@ -13,11 +13,11 @@ public class ItemDto {
     public ItemDto() {
     }
 
-    public ItemDto(long id) {
+    public ItemDto(String id) {
         this.id = id;
     }
 
-    public ItemDto(long id, String name, String description) {
+    public ItemDto(String id, String name, String description) {
         this.id = id;
         this.name = name;
         this.description = description;

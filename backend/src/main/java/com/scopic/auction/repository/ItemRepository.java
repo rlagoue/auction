@@ -2,6 +2,10 @@ package com.scopic.auction.repository;
 
 import com.scopic.auction.domain.Item;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
-public interface ItemRepository extends JpaRepository<Item, Long> {
+import java.util.UUID;
+
+@Repository
+public interface ItemRepository extends JpaRepository<Item, UUID> {
 }

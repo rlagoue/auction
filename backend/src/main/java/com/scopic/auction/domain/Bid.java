@@ -5,13 +5,12 @@ import com.scopic.auction.repository.jpa.MoneyConverter;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.Objects;
+import java.util.UUID;
 
 @Entity
 @Table(name = "t_bid")
-public class Bid {
-    @Id
-    @Column(name = "c_id")
-    private long id;
+public class Bid extends BaseDomainObject {
     @ManyToOne
     @JoinColumn(name = "c_item", referencedColumnName = "c_id")
     private Item item;
@@ -40,10 +39,14 @@ public class Bid {
 
     public BidDto toDto() {
         final BidDto result = new BidDto();
-        result.id = this.id;
+        result.id = this.id.toString();
         result.user = this.user.toDto();
         result.time = this.time;
         result.amount = this.amount.toDto();
         return result;
+    }
+
+    public boolean isBiggerThan(Money amount) {
+        return this.amount.isBiggerThan(amount);
     }
 }
