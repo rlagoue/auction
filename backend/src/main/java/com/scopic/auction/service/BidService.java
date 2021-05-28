@@ -32,4 +32,5 @@ public class BidService {
             return "success";
         }).orElse("outbidded");
     }
+
 }

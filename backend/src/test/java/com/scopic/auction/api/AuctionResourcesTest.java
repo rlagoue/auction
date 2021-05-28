@@ -2,7 +2,7 @@ package com.scopic.auction.api;
 
 import com.scopic.auction.dto.MakeBidDto;
 import com.scopic.auction.dto.UserDto;
-import com.scopic.auction.service.BidService;
+import com.scopic.auction.service.AuctionService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -13,15 +13,15 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @ExtendWith(MockitoExtension.class)
-class BidResourcesTest {
+class AuctionResourcesTest {
 
-    private BidResources objectToTest;
+    private AuctionResources objectToTest;
     @Mock
-    private BidService bidService;
+    private AuctionService auctionService;
 
     @BeforeEach
     void setUp() {
-        objectToTest = new BidResources(bidService);
+        objectToTest = new AuctionResources(auctionService);
     }
 
     @Test
@@ -32,7 +32,7 @@ class BidResourcesTest {
         data.bid = 10;
 
         final String expectedResponse = "success";
-        Mockito.when(bidService.makeABid(itemId, data)).thenReturn(expectedResponse);
+        Mockito.when(auctionService.makeABid(itemId, data)).thenReturn(expectedResponse);
         final String response = objectToTest.makeABid(itemId, data);
 
         assertEquals(expectedResponse, response);
