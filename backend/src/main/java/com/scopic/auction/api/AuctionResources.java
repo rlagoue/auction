@@ -1,13 +1,11 @@
 package com.scopic.auction.api;
 
 import com.scopic.auction.dto.MakeBidDto;
+import com.scopic.auction.dto.SettingsDto;
 import com.scopic.auction.service.AuctionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 @Controller
 public class AuctionResources {
@@ -26,5 +24,11 @@ public class AuctionResources {
             @RequestBody MakeBidDto data
     ) {
         return auctionService.makeABid(itemId, data);
+    }
+
+    @GetMapping("/user/{username}/settings")
+    @ResponseBody
+    public SettingsDto getSettings(@PathVariable("username") String username) {
+        return auctionService.getSettings(username);
     }
 }

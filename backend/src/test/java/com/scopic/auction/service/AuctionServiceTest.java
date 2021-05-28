@@ -1,6 +1,9 @@
 package com.scopic.auction.service;
 
+import com.scopic.auction.domain.Settings;
 import com.scopic.auction.dto.MakeBidDto;
+import com.scopic.auction.dto.SettingsDto;
+import com.scopic.auction.repository.SettingsRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -9,9 +12,11 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 
+import java.util.Optional;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
 @ExtendWith(MockitoExtension.class)
 class AuctionServiceTest {
@@ -19,10 +24,12 @@ class AuctionServiceTest {
     private AuctionService objectToTest;
     @Mock
     private BidService bidService;
+    @Mock
+    private SettingsRepository settingsRepository;
 
     @BeforeEach
     void setUp() {
-        objectToTest = new AuctionService(bidService);
+        objectToTest = new AuctionService(bidService, settingsRepository);
     }
 
     @Test
@@ -56,5 +63,20 @@ class AuctionServiceTest {
                 data
         );
         assertEquals("original-state-changed", response);
+    }
+
+    @Test
+    void getSettingsTest() {
+        final String username = "username";
+
+        Settings settings = Mockito.mock(Settings.class);
+        Mockito.when(settingsRepository.findById(username))
+                .thenReturn(Optional.of(settings));
+        SettingsDto expected = Mockito.mock(SettingsDto.class);
+        Mockito.when(settings.toDto()).thenReturn(expected);
+
+        final SettingsDto settingsDto = objectToTest.getSettings(username);
+
+        assertSame(expected, settingsDto);
     }
 }
