@@ -1,7 +1,9 @@
 package com.scopic.auction.service;
 
+import com.scopic.auction.domain.Money;
 import com.scopic.auction.domain.Settings;
 import com.scopic.auction.dto.MakeBidDto;
+import com.scopic.auction.dto.MoneyDto;
 import com.scopic.auction.dto.SettingsDto;
 import com.scopic.auction.repository.SettingsRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -78,5 +80,40 @@ class AuctionServiceTest {
         final SettingsDto settingsDto = objectToTest.getSettings(username);
 
         assertSame(expected, settingsDto);
+    }
+
+    @Test
+    void updateSettingsTest() {
+        final String username = "username";
+        SettingsDto data = new SettingsDto();
+        final double value = 10d;
+        data.maxBidAmount = new MoneyDto();
+        data.maxBidAmount.value = value;
+        data.maxBidAmount.currency = "USD";
+        Settings settings = Mockito.mock(Settings.class);
+        Mockito.when(settingsRepository.findById(username))
+                .thenReturn(Optional.of(settings));
+
+        objectToTest.updateSettings(username, data);
+
+        Mockito.verify(settings).update(new Money(value, "USD"));
+        Mockito.verify(settingsRepository).saveAndFlush(settings);
+    }
+
+    @Test
+    void updateSettingsForTheFirstTimeTest() {
+        final String username = "username";
+        SettingsDto data = new SettingsDto();
+        final double value = 10d;
+        data.maxBidAmount = new MoneyDto();
+        data.maxBidAmount.value = value;
+        data.maxBidAmount.currency = "USD";
+        Mockito.when(settingsRepository.findById(username))
+                .thenReturn(Optional.empty());
+
+        objectToTest.updateSettings(username, data);
+
+        Mockito.verify(settingsRepository)
+                .saveAndFlush(Mockito.any(Settings.class));
     }
 }

@@ -52,4 +52,14 @@ class AuctionResourcesTest {
 
         assertSame(expected, settingsDto);
     }
+
+    @Test
+    void updateSettingsTest() {
+        final String username = "username";
+        final SettingsDto data = Mockito.mock(SettingsDto.class);
+
+        objectToTest.updateSettings(username, data);
+
+        Mockito.verify(auctionService).updateSettings(username, data);
+    }
 }

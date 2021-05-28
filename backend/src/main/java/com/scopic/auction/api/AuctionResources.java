@@ -31,4 +31,12 @@ public class AuctionResources {
     public SettingsDto getSettings(@PathVariable("username") String username) {
         return auctionService.getSettings(username);
     }
+
+    @PutMapping("/user/{username}/settings")
+    public void updateSettings(
+            @PathVariable("username") String username,
+            @RequestBody SettingsDto data
+    ) {
+        auctionService.updateSettings(username, data);
+    }
 }

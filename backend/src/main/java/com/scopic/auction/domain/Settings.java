@@ -26,8 +26,11 @@ public class Settings {
 
     public SettingsDto toDto() {
         final SettingsDto result = new SettingsDto();
-        result.username = this.username;
         result.maxBidAmount = this.maxBidAmount.toDto();
         return result;
+    }
+
+    public void update(Money maxBidAmount) {
+
     }
 }

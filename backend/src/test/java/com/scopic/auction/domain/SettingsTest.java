@@ -41,7 +41,6 @@ class SettingsTest {
 
         final SettingsDto dto = objectToTest.toDto();
 
-        assertEquals(username, dto.username);
         assertEquals(amountDto, dto.maxBidAmount);
     }
 }

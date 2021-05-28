@@ -1,5 +1,7 @@
 package com.scopic.auction.service;
 
+import com.scopic.auction.domain.Money;
+import com.scopic.auction.domain.Settings;
 import com.scopic.auction.dto.MakeBidDto;
 import com.scopic.auction.dto.SettingsDto;
 import com.scopic.auction.repository.SettingsRepository;
@@ -36,5 +38,17 @@ public class AuctionService {
         return this.settingsRepository.findById(username)
                 .map(settings -> settings.toDto())
                 .orElseThrow();
+    }
+
+    @Transactional
+    public void updateSettings(String username, SettingsDto data) {
+        final Money maxBidAmount = new Money(
+                data.maxBidAmount.value,
+                data.maxBidAmount.currency
+        );
+        final Settings settings = settingsRepository.findById(username)
+                .orElse(new Settings(username, maxBidAmount));
+        settings.update(maxBidAmount);
+        settingsRepository.saveAndFlush(settings);
     }
 }
