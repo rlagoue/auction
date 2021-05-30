@@ -11,9 +11,14 @@ public abstract class BaseDomainObject {
     @Column(name = "c_id")
     protected UUID id;
     @Version
+    @Column(name = "c_version")
     private long version;
 
     public BaseDomainObject() {
+    }
+
+    public UUID getId() {
+        return id;
     }
 
     @Override

@@ -56,6 +56,13 @@ public class InventoryService {
                 .orElse(null);
     }
 
+    @Transactional
+    public UUID addItem(ItemDto data) {
+        final var item = new Item(data.name, data.description);
+        itemRepository.saveAndFlush(item);
+        return item.getId();
+    }
+
     private class ItemToDto implements Function<Item, ItemDto> {
 
         private final User user;

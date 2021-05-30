@@ -12,6 +12,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -44,7 +45,7 @@ class InventoryResourcesTest {
 
         assertEquals(totalCount, itemFetchDto.totalCount);
         assertEquals(10, itemFetchDto.items.size());
-        assertTrue(itemFetchDto.items.stream().allMatch(item -> item instanceof ItemDto));
+        assertTrue(itemFetchDto.items.stream().allMatch(Objects::nonNull));
     }
 
     @Test
@@ -59,5 +60,16 @@ class InventoryResourcesTest {
         final ItemDto itemDto = objectToTest.getItemById(itemId);
 
         assertEquals(itemId, itemDto.id);
+    }
+
+    @Test
+    void addItemTest() {
+        final var data = new ItemDto();
+        final var id = UUID.randomUUID();
+        Mockito.when(inventoryService.addItem(data)).thenReturn(id);
+
+        String newItemId = objectToTest.addItem(data);
+
+        assertEquals(id.toString(), newItemId);
     }
 }

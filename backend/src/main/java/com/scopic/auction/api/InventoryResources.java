@@ -5,10 +5,7 @@ import com.scopic.auction.dto.ItemFetchDto;
 import com.scopic.auction.service.InventoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 @Controller
 public class InventoryResources {
@@ -30,5 +27,11 @@ public class InventoryResources {
     @ResponseBody
     public ItemDto getItemById(@PathVariable("id") String id) {
         return inventoryService.getItemById(id);
+    }
+
+    @PostMapping("/item")
+    @ResponseBody
+    public String addItem(@RequestBody ItemDto data) {
+        return inventoryService.addItem(data).toString();
     }
 }

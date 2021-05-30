@@ -17,10 +17,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -77,7 +74,7 @@ class InventoryServiceTest {
 
             assertEquals(totalCount, itemFetchDto.totalCount);
             assertEquals(10, itemFetchDto.items.size());
-            assertTrue(itemFetchDto.items.stream().allMatch(item -> item != null));
+            assertTrue(itemFetchDto.items.stream().allMatch(Objects::nonNull));
             assertTrue(itemFetchDto.items.stream().allMatch(item -> item.isAutoBidActive));
             Mockito.verify(settings, Mockito.times(10)).isAutoBidActiveFor(Mockito.any(Item.class));
         }
@@ -103,5 +100,32 @@ class InventoryServiceTest {
 
         assertSame(expectedItemDto, itemDto);
         assertTrue(itemDto.isAutoBidActive);
+    }
+
+    @Test
+    void addItemTest() {
+        final var name = "mug";
+        final var description = "Njoya personal mug";
+        final var data = new ItemDto();
+        data.name = name;
+        data.description = description;
+
+        final var expectedItemId = UUID.randomUUID();
+
+        try (final var itemMockedConstruction = Mockito.mockConstruction(
+                Item.class,
+                (mock, context) -> {
+                    assertEquals(name, context.arguments().get(0));
+                    assertEquals(description, context.arguments().get(1));
+                    Mockito.when(mock.getId()).thenReturn(expectedItemId);
+                }
+        )
+        ) {
+            assertEquals(expectedItemId, objectToTest.addItem(data));
+            assertEquals(1, itemMockedConstruction.constructed().size());
+            final var createdItem = itemMockedConstruction.constructed().get(0);
+            Mockito.verify(itemRepository).saveAndFlush(createdItem);
+        }
+
     }
 }
