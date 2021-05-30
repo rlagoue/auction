@@ -2,21 +2,16 @@ package com.scopic.auction.domain;
 
 import com.scopic.auction.dto.BidDto;
 import com.scopic.auction.dto.ItemDto;
-import org.hamcrest.BaseMatcher;
-import org.hamcrest.Description;
-import org.hamcrest.Matcher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 import static com.scopic.auction.utils.Whitebox.getFieldValue;
 import static com.scopic.auction.utils.Whitebox.setFieldValue;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ItemTest {
@@ -39,7 +34,7 @@ class ItemTest {
 
         Bid bid1 = Mockito.mock(Bid.class);
         Bid bid2 = Mockito.mock(Bid.class);
-        setFieldValue(objectToTest, "bids", List.of(bid1, bid2));
+        setFieldValue(objectToTest, "bids", Set.of(bid1, bid2));
 
         BidDto bidDto1 = Mockito.mock(BidDto.class);
         BidDto bidDto2 = Mockito.mock(BidDto.class);
@@ -57,21 +52,47 @@ class ItemTest {
     }
 
     @Test
+    void makeFirstBidTest() {
+        User user = Mockito.mock(User.class);
+        Money amount = new Money(10d, "USD");
+        Set<Bid> bids = getFieldValue(objectToTest, "bids");
+        int size = bids.size();
+
+        final Bid bid = Mockito.mock(Bid.class);
+        Mockito.when(
+                user.makeABid(objectToTest, amount, Optional.empty())
+        ).thenReturn(bid);
+
+        final String result = objectToTest.makeABid(user, amount);
+
+        assertEquals("success", result);
+        assertEquals(user, getFieldValue(objectToTest, "currentBidder"));
+
+        bids = getFieldValue(objectToTest, "bids");
+        assertEquals(size + 1, bids.size());
+        assertTrue(bids.contains(bid));
+    }
+
+    @Test
     void makeABidSuccessfullyTest() {
         User user = Mockito.mock(User.class);
         Money amount = new Money(10d, "USD");
-        List<Bid> bids = getFieldValue(objectToTest, "bids");
+        Set<Bid> bids = getFieldValue(objectToTest, "bids");
         int size = bids.size();
 
-        final Bid bid = objectToTest.makeABid(user, amount);
+        final var currentBidder = Mockito.mock(User.class);
+        setFieldValue(objectToTest, "currentBidder", currentBidder);
+        final Bid bid = Mockito.mock(Bid.class);
+        Mockito.when(
+                user.makeABid(objectToTest, amount, Optional.of(currentBidder))
+        ).thenReturn(bid);
+        Mockito.when(
+                currentBidder.tryToOutbidOn(objectToTest, currentBidder)
+        ).thenReturn(Optional.empty());
 
-        assertSame(objectToTest, getFieldValue(bid, "item"));
-        assertSame(amount, getFieldValue(bid, "amount"));
-        assertEquals(user, getFieldValue(bid, "user"));
-        assertThat(
-                getFieldValue(bid, "time"),
-                notOlderThan(500)
-        );
+        final String result = objectToTest.makeABid(user, amount);
+
+        assertEquals("success", result);
 
         bids = getFieldValue(objectToTest, "bids");
 
@@ -79,43 +100,111 @@ class ItemTest {
         assertTrue(bids.contains(bid));
     }
 
-    private Matcher<LocalDateTime> notOlderThan(long milliseconds) {
-        return new BaseMatcher<LocalDateTime>() {
-            @Override
-            public boolean matches(Object actual) {
-                return Duration.between(
-                        LocalDateTime.now(),
-                        (LocalDateTime) actual
-                ).abs().toMillis() <= milliseconds;
-            }
-
-            @Override
-            public void describeTo(Description description) {
-
-            }
-        };
-    }
-
     @Test
     void makeABidFailureTest() {
         User user = Mockito.mock(User.class);
         Money amount = new Money(10d, "USD");
-
-        Bid bid1 = Mockito.mock(Bid.class);
-        Bid bid2 = Mockito.mock(Bid.class);
-
-        List<Bid> bids = getFieldValue(objectToTest, "bids");
-        bids.add(bid1);
-        bids.add(bid2);
+        Set<Bid> bids = getFieldValue(objectToTest, "bids");
         int size = bids.size();
 
-        Mockito.when(bid1.isBiggerThan(amount)).thenReturn(true);
-        Mockito.when(bid2.isBiggerThan(amount)).thenReturn(false);
+        final var currentBidder = Mockito.mock(User.class);
+        setFieldValue(objectToTest, "currentBidder", currentBidder);
+        final Bid bid1 = Mockito.mock(Bid.class);
+        Mockito.when(
+                user.makeABid(objectToTest, amount, Optional.of(currentBidder))
+        ).thenReturn(bid1);
+        final var bid2 = Mockito.mock(Bid.class);
+        Mockito.when(
+                currentBidder.tryToOutbidOn(objectToTest, user)
+        ).thenReturn(Optional.of(bid2));
 
-        final Bid bid = objectToTest.makeABid(user, amount);
+        final String result = objectToTest.makeABid(user, amount);
 
-        assertNull(bid);
+        assertEquals("outbidded", result);
+
         bids = getFieldValue(objectToTest, "bids");
-        assertEquals(size, bids.size());
+
+        assertEquals(size + 2, bids.size());
+        assertTrue(bids.contains(bid1));
+        assertTrue(bids.contains(bid2));
+    }
+
+    @Test
+    void isCurrentBidBiggerThanTrueTest() {
+        final var bid = Mockito.mock(Bid.class);
+        final var currentBid = Mockito.mock(Bid.class);
+        setFieldValue(objectToTest, "bids", Set.of(bid, currentBid));
+
+        Money amount = Mockito.mock(Money.class);
+        Mockito.when(currentBid.isBiggerThan(amount)).thenReturn(true);
+
+        try (final var bidMockedStatic = Mockito.mockStatic(Bid.class)) {
+            bidMockedStatic.when(() -> Bid.newestOf(Set.of(bid, currentBid))).thenReturn(Optional.of(currentBid));
+            assertTrue(objectToTest.isCurrentBidBiggerThan(amount));
+        }
+    }
+
+    @Test
+    void isCurrentBidBiggerThanFalseTest() {
+        final var bid = Mockito.mock(Bid.class);
+        final var currentBid = Mockito.mock(Bid.class);
+        setFieldValue(objectToTest, "bids", Set.of(bid, currentBid));
+
+        Money amount = Mockito.mock(Money.class);
+        Mockito.when(currentBid.isBiggerThan(amount)).thenReturn(false);
+
+        try (final var bidMockedStatic = Mockito.mockStatic(Bid.class)) {
+            bidMockedStatic.when(() -> Bid.newestOf(Set.of(bid, currentBid))).thenReturn(Optional.of(currentBid));
+            assertFalse(objectToTest.isCurrentBidBiggerThan(amount));
+        }
+    }
+
+    @Test
+    void isCurrentBidBiggerThanWheNoBidPresentTest() {
+        Money amount = Mockito.mock(Money.class);
+        assertFalse(objectToTest.isCurrentBidBiggerThan(amount));
+    }
+
+    @Test
+    void addWithCurrentBidTest() {
+        final var amount = Mockito.mock(Money.class);
+        final var expected = Mockito.mock(Money.class);
+
+        final var bid = Mockito.mock(Bid.class);
+        final var currentBid = Mockito.mock(Bid.class);
+        setFieldValue(objectToTest, "bids", Set.of(bid, currentBid));
+
+        Mockito.when(currentBid.addWithAmount(amount)).thenReturn(expected);
+
+        try (final var bidMockedStatic = Mockito.mockStatic(Bid.class)) {
+            bidMockedStatic.when(() -> Bid.newestOf(Set.of(bid, currentBid))).thenReturn(Optional.of(currentBid));
+            assertEquals(expected, objectToTest.addWithCurrentBid(amount));
+        }
+    }
+
+    @Test
+    void addWithCurrentBidWhenNoBidPresentTest() {
+        final var amount = Mockito.mock(Money.class);
+        assertEquals(amount, objectToTest.addWithCurrentBid(amount));
+    }
+
+    @Test
+    void makeNextPossibleBidTest() {
+        final var newBidder = Mockito.mock(User.class);
+        final var bid = Mockito.mock(Bid.class);
+        final var lastBid = Mockito.mock(Bid.class);
+
+        objectToTest = Mockito.spy(Item.class);
+
+        final Bid newBid = Mockito.mock(Bid.class);
+        Mockito.when(lastBid.incrementFor(newBidder)).thenReturn(newBid);
+
+        Mockito.doReturn("anyResponse").when(objectToTest).registerNewBid(newBid, newBidder);
+
+        try (final var bidMockedStatic = Mockito.mockStatic(Bid.class)) {
+            bidMockedStatic.when(() -> Bid.newestOf(Set.of(bid, lastBid)))
+                    .thenReturn(Optional.of(lastBid));
+            objectToTest.makeNextPossibleBid(newBidder);
+        }
     }
 }

@@ -9,6 +9,7 @@ public class ItemDto {
     public String name;
     public String description;
     public List<BidDto> bids = new ArrayList<>();
+    public boolean isAutoBidActive;
 
     public ItemDto() {
     }

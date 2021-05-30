@@ -4,24 +4,23 @@ import com.scopic.auction.dto.ItemDto;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "t_item")
 public class Item extends BaseDomainObject {
-    @OneToMany(mappedBy = "item")
-    private final List<Bid> bids = new ArrayList<>();
-    @Id
-    @GeneratedValue
-    @Column(name = "c_id")
-    private UUID id;
     @Column(name = "c_name")
     private String name;
     @Column(name = "c_description")
     private String description;
+    @OneToMany(mappedBy = "item", cascade = CascadeType.ALL)
+    private Set<Bid> bids = new HashSet<>();
+    @ManyToOne
+    @JoinColumn(name = "c_currentbidder", referencedColumnName = "c_username")
+    private User currentBidder;
 
     public Item() {
     }
@@ -39,13 +38,55 @@ public class Item extends BaseDomainObject {
         return result;
     }
 
-    public Bid makeABid(User user, Money amount) {
-        if (this.bids.stream().anyMatch(bid -> bid.isBiggerThan(amount))) {
-            return null;
+    public void makeNextPossibleBid(User newBidder) {
+        if (getNewestBid()
+                .map(bid -> bid.incrementFor(newBidder))
+                .map(bid -> registerNewBid(bid, newBidder))
+                .isEmpty()
+        ) {
+            makeABid(newBidder, new Money(1, "USD"));
         }
-        final Bid bid = new Bid(this, user, LocalDateTime.now(), amount);
+    }
+
+    public String makeABid(User newBidder, Money amount) {
+        if (this.bids.stream().anyMatch(bid -> bid.isBiggerThan(amount))) {
+            return "outbidded";
+        }
+        Bid bid = newBidder.makeABid(
+                this,
+                amount,
+                Optional.ofNullable(currentBidder)
+        );
+        return registerNewBid(bid, newBidder);
+    }
+
+    String registerNewBid(Bid bid, User newBidder) {
         this.bids.add(bid);
-        return bid;
+        Optional<Bid> outbid = tryAutoBid(newBidder);
+        outbid.ifPresent(newBid -> this.bids.add(newBid));
+        return outbid.isEmpty() ? "success" : "outbidded";
+    }
+
+    private Optional<Bid> tryAutoBid(User newBidder) {
+        if (this.currentBidder == null) {
+            this.currentBidder = newBidder;
+            return Optional.empty();
+        } else {
+            return this.currentBidder.tryToOutbidOn(this, newBidder);
+        }
+    }
+
+    public boolean isCurrentBidBiggerThan(Money amount) {
+        final var newestBid = getNewestBid();
+        return newestBid.map(bid -> bid.isBiggerThan(amount)).orElse(false);
+    }
+
+    private Optional<Bid> getNewestBid() {
+        return Bid.newestOf(this.bids);
+    }
+
+    public Money addWithCurrentBid(Money amount) {
+        return getNewestBid().map(bid -> bid.addWithAmount(amount)).orElse(amount);
     }
 
 }

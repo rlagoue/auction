@@ -133,4 +133,11 @@ public class Money {
     public boolean isBiggerThan(Money amount) {
         return this.value >= amount.value;
     }
+
+    public Money nextAmount() {
+        final double newValue = Math.floor(
+                computeOriginalValue().doubleValue() + 1
+        );
+        return new Money(newValue, currency);
+    }
 }

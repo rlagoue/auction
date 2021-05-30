@@ -1,11 +1,6 @@
 package com.scopic.auction.service;
 
-import com.scopic.auction.domain.Money;
-import com.scopic.auction.domain.Settings;
-import com.scopic.auction.dto.MakeBidDto;
-import com.scopic.auction.dto.MoneyDto;
-import com.scopic.auction.dto.SettingsDto;
-import com.scopic.auction.repository.SettingsRepository;
+import com.scopic.auction.api.BaseResourcesTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -14,36 +9,33 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertSame;
 
 @ExtendWith(MockitoExtension.class)
-class AuctionServiceTest {
+class AuctionServiceTest extends BaseResourcesTest {
 
     private AuctionService objectToTest;
     @Mock
-    private BidService bidService;
-    @Mock
-    private SettingsRepository settingsRepository;
+    private UserService userService;
 
     @BeforeEach
     void setUp() {
-        objectToTest = new AuctionService(bidService, settingsRepository);
+        objectToTest = new AuctionService(userService);
     }
 
     @Test
     void makeABidTest() {
         final String itemId = UUID.randomUUID().toString();
         String expected = "expected";
-        final MakeBidDto data = Mockito.mock(MakeBidDto.class);
-        Mockito.when(bidService.makeABid(itemId, data)).thenReturn(expected);
+        final var bid = 10d;
+        Mockito.when(userService.makeABid(itemId, bid, CURRENT_USER)).thenReturn(expected);
 
         final String response = objectToTest.makeABid(
                 itemId,
-                data
+                bid,
+                CURRENT_USER
         );
         assertEquals(expected, response);
     }
@@ -51,8 +43,8 @@ class AuctionServiceTest {
     @Test
     void makeABidWithOriginalStateChangedTest() {
         final String itemId = UUID.randomUUID().toString();
-        final MakeBidDto data = Mockito.mock(MakeBidDto.class);
-        Mockito.when(bidService.makeABid(itemId, data))
+        final var bid = 10d;
+        Mockito.when(userService.makeABid(itemId, bid, CURRENT_USER))
                 .thenThrow(
                         new ObjectOptimisticLockingFailureException(
                                 "",
@@ -62,58 +54,10 @@ class AuctionServiceTest {
 
         final String response = objectToTest.makeABid(
                 itemId,
-                data
+                bid,
+                CURRENT_USER
         );
         assertEquals("original-state-changed", response);
     }
 
-    @Test
-    void getSettingsTest() {
-        final String username = "username";
-
-        Settings settings = Mockito.mock(Settings.class);
-        Mockito.when(settingsRepository.findById(username))
-                .thenReturn(Optional.of(settings));
-        SettingsDto expected = Mockito.mock(SettingsDto.class);
-        Mockito.when(settings.toDto()).thenReturn(expected);
-
-        final SettingsDto settingsDto = objectToTest.getSettings(username);
-
-        assertSame(expected, settingsDto);
-    }
-
-    @Test
-    void updateSettingsTest() {
-        final String username = "username";
-        SettingsDto data = new SettingsDto();
-        final double value = 10d;
-        data.maxBidAmount = new MoneyDto();
-        data.maxBidAmount.value = value;
-        data.maxBidAmount.currency = "USD";
-        Settings settings = Mockito.mock(Settings.class);
-        Mockito.when(settingsRepository.findById(username))
-                .thenReturn(Optional.of(settings));
-
-        objectToTest.updateSettings(username, data);
-
-        Mockito.verify(settings).update(new Money(value, "USD"));
-        Mockito.verify(settingsRepository).saveAndFlush(settings);
-    }
-
-    @Test
-    void updateSettingsForTheFirstTimeTest() {
-        final String username = "username";
-        SettingsDto data = new SettingsDto();
-        final double value = 10d;
-        data.maxBidAmount = new MoneyDto();
-        data.maxBidAmount.value = value;
-        data.maxBidAmount.currency = "USD";
-        Mockito.when(settingsRepository.findById(username))
-                .thenReturn(Optional.empty());
-
-        objectToTest.updateSettings(username, data);
-
-        Mockito.verify(settingsRepository)
-                .saveAndFlush(Mockito.any(Settings.class));
-    }
 }

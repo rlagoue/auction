@@ -1,42 +1,59 @@
 package com.scopic.auction.api;
 
-import com.scopic.auction.dto.MakeBidDto;
+import com.scopic.auction.domain.InvalidNewMaxBidAmountException;
 import com.scopic.auction.dto.SettingsDto;
 import com.scopic.auction.service.AuctionService;
+import com.scopic.auction.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 @Controller
-public class AuctionResources {
+public class AuctionResources extends BaseResources {
 
     private final AuctionService auctionService;
+    private final UserService userService;
 
     @Autowired
-    public AuctionResources(AuctionService auctionService) {
+    public AuctionResources(AuctionService auctionService, UserService userService) {
         this.auctionService = auctionService;
+        this.userService = userService;
     }
 
-    @PostMapping("/item/{itemId}/bid")
+    @PostMapping("/item/{itemId}/bid/{bid}")
     @ResponseBody
     public String makeABid(
             @PathVariable("itemID") String itemId,
-            @RequestBody MakeBidDto data
+            @PathVariable("bid") Number bid
     ) {
-        return auctionService.makeABid(itemId, data);
+        return auctionService.makeABid(itemId, bid, getCurrentUsername());
     }
 
     @GetMapping("/user/{username}/settings")
     @ResponseBody
     public SettingsDto getSettings(@PathVariable("username") String username) {
-        return auctionService.getSettings(username);
+        return userService.getSettings(username);
     }
 
     @PutMapping("/user/{username}/settings")
-    public void updateSettings(
+    @ResponseBody
+    public String updateSettings(
             @PathVariable("username") String username,
             @RequestBody SettingsDto data
     ) {
-        auctionService.updateSettings(username, data);
+        try {
+            userService.updateSettings(username, data);
+            return "success";
+        } catch (InvalidNewMaxBidAmountException e) {
+            return e.getMessage();
+        }
+    }
+
+    @PostMapping("/user/{username}/activate-auto-bid/{itemId}")
+    public void activateAutoBidOnItem(
+            @PathVariable("username") String username,
+            @PathVariable("itemId") String itemId
+    ) {
+        userService.activateAutoBidOnItem(username, itemId);
     }
 }

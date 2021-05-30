@@ -1,9 +1,11 @@
 package com.scopic.auction.service;
 
 import com.scopic.auction.domain.Item;
+import com.scopic.auction.domain.User;
 import com.scopic.auction.dto.ItemDto;
 import com.scopic.auction.dto.ItemFetchDto;
 import com.scopic.auction.repository.ItemRepository;
+import com.scopic.auction.utils.ThreadLocalStorage;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,10 +30,12 @@ class InventoryServiceTest {
     private InventoryService objectToTest;
     @Mock
     private ItemRepository itemRepository;
+    @Mock
+    private UserService settingsRepository;
 
     @BeforeEach
     void setUp() {
-        objectToTest = new InventoryService(itemRepository);
+        objectToTest = new InventoryService(itemRepository, settingsRepository);
     }
 
     @Test
@@ -63,11 +67,19 @@ class InventoryServiceTest {
 
             Mockito.when(itemRepository.findAll(pageable)).thenReturn(page);
 
+            final User settings = Mockito.mock(User.class);
+            final String username = "user1";
+            ThreadLocalStorage.set(new ThreadLocalStorage(username));
+            Mockito.when(settingsRepository.getById(username)).thenReturn(settings);
+            Mockito.when(settings.isAutoBidActiveFor(Mockito.any(Item.class))).thenReturn(true);
+
             final ItemFetchDto itemFetchDto = objectToTest.getItems(pageIndex);
 
             assertEquals(totalCount, itemFetchDto.totalCount);
             assertEquals(10, itemFetchDto.items.size());
-            assertTrue(itemFetchDto.items.stream().allMatch(item -> item instanceof ItemDto));
+            assertTrue(itemFetchDto.items.stream().allMatch(item -> item != null));
+            assertTrue(itemFetchDto.items.stream().allMatch(item -> item.isAutoBidActive));
+            Mockito.verify(settings, Mockito.times(10)).isAutoBidActiveFor(Mockito.any(Item.class));
         }
     }
 
@@ -75,6 +87,12 @@ class InventoryServiceTest {
     void getItemByIdTest() {
         final UUID itemId = UUID.randomUUID();
         final String itemIdAsString = itemId.toString();
+
+        final User user = Mockito.mock(User.class);
+        final String username = "user1";
+        ThreadLocalStorage.set(new ThreadLocalStorage(username));
+        Mockito.when(settingsRepository.getById(username)).thenReturn(user);
+        Mockito.when(user.isAutoBidActiveFor(Mockito.any(Item.class))).thenReturn(true);
 
         Item item = Mockito.mock(Item.class);
         Mockito.when(itemRepository.findById(itemId)).thenReturn(Optional.of(item));
@@ -84,5 +102,6 @@ class InventoryServiceTest {
         final ItemDto itemDto = objectToTest.getItemById(itemIdAsString);
 
         assertSame(expectedItemDto, itemDto);
+        assertTrue(itemDto.isAutoBidActive);
     }
 }

@@ -3,6 +3,7 @@ package com.scopic.auction.domain;
 import com.scopic.auction.dto.BidDto;
 import com.scopic.auction.dto.MoneyDto;
 import com.scopic.auction.dto.UserDto;
+import com.scopic.auction.utils.CoreMatchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -12,6 +13,7 @@ import java.util.UUID;
 
 import static com.scopic.auction.utils.Whitebox.getFieldValue;
 import static com.scopic.auction.utils.Whitebox.setFieldValue;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 class BidTest {
@@ -33,7 +35,7 @@ class BidTest {
         objectToTest = new Bid(item, user, time, amount);
 
         assertSame(item, getFieldValue(objectToTest, "item"));
-        assertSame(user, getFieldValue(objectToTest, "user"));
+        assertSame(user, getFieldValue(objectToTest, "bidder"));
         assertSame(time, getFieldValue(objectToTest, "time"));
         assertSame(amount, getFieldValue(objectToTest, "amount"));
     }
@@ -46,7 +48,7 @@ class BidTest {
         final UUID id = UUID.randomUUID();
         Money amount = Mockito.mock(Money.class);
         setFieldValue(objectToTest, "id", id);
-        setFieldValue(objectToTest, "user", user);
+        setFieldValue(objectToTest, "bidder", user);
         setFieldValue(objectToTest, "item", item);
         setFieldValue(objectToTest, "time", time);
         setFieldValue(objectToTest, "amount", amount);
@@ -78,5 +80,50 @@ class BidTest {
 
         assertTrue(objectToTest.isBiggerThan(amount2));
         assertFalse(objectToTest.isBiggerThan(amount3));
+    }
+
+    @Test
+    void isAboutTest() {
+        final var correctItem = Mockito.mock(Item.class);
+        final var wrongItem = Mockito.mock(Item.class);
+
+        setFieldValue(objectToTest, "item", correctItem);
+
+        assertTrue(objectToTest.isAbout(correctItem));
+        assertFalse(objectToTest.isAbout(wrongItem));
+    }
+
+    @Test
+    void incrementForTest() {
+        final var bidder = Mockito.mock(User.class);
+        final var item = Mockito.mock(Item.class);
+        final var amount = Mockito.mock(Money.class);
+        final var nextAmount = Mockito.mock(Money.class);
+
+        Mockito.when(amount.nextAmount()).thenReturn(nextAmount);
+
+        setFieldValue(objectToTest, "item", item);
+        setFieldValue(objectToTest, "amount", amount);
+
+        final var newBid = objectToTest.incrementFor(bidder);
+
+        assertEquals(item, getFieldValue(newBid, "item"));
+        assertEquals(bidder, getFieldValue(newBid, "bidder"));
+        assertEquals(nextAmount, getFieldValue(newBid, "amount"));
+        final LocalDateTime time = getFieldValue(newBid, "time");
+        assertThat(time, CoreMatchers.notOlderThan(500));
+    }
+
+    @Test
+    void addWithAmountTest() {
+        final var amount = Mockito.mock(Money.class);
+        final var amountToAdd = Mockito.mock(Money.class);
+        final var expected = Mockito.mock(Money.class);
+
+        setFieldValue(objectToTest, "amount", amount);
+
+        Mockito.when(amount.add(amountToAdd)).thenReturn(expected);
+
+        assertEquals(expected, objectToTest.addWithAmount(amountToAdd));
     }
 }
