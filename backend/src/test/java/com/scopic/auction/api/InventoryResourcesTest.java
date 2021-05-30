@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(MockitoExtension.class)
-class InventoryResourcesTest {
+class InventoryResourcesTest extends BaseResourcesTest {
 
     private InventoryResources objectToTest;
     @Mock
@@ -38,7 +38,7 @@ class InventoryResourcesTest {
         for (int i = 1; i <= 10; i++) {
             items.add(Mockito.mock(ItemDto.class));
         }
-        Mockito.when(inventoryService.getItems(pageIndex))
+        Mockito.when(inventoryService.getItems(CURRENT_USER, pageIndex))
                 .thenReturn(new ItemFetchDto(totalCount, items));
 
         final ItemFetchDto itemFetchDto = objectToTest.getItems(pageIndex);
@@ -55,7 +55,7 @@ class InventoryResourcesTest {
         ItemDto expectedItemDto = new ItemDto();
         expectedItemDto.id = itemId;
 
-        Mockito.when(inventoryService.getItemById(itemId)).thenReturn(expectedItemDto);
+        Mockito.when(inventoryService.getItemById(CURRENT_USER, itemId)).thenReturn(expectedItemDto);
 
         final ItemDto itemDto = objectToTest.getItemById(itemId);
 

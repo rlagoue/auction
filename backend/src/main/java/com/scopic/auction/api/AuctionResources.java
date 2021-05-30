@@ -54,7 +54,7 @@ public class AuctionResources extends BaseResources {
         userService.activateAutoBidOnItem(getCurrentUsername(), itemId);
     }
 
-    @PostMapping("/activate-auto-bid/{itemId}")
+    @PostMapping("/deactivate-auto-bid/{itemId}")
     public void deactivateAutoBidOnItem(@PathVariable("itemId") String itemId) {
         userService.deactivateAutoBidOnItem(getCurrentUsername(), itemId);
     }

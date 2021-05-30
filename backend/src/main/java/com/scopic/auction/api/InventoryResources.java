@@ -8,7 +8,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 @Controller
-public class InventoryResources {
+public class InventoryResources extends BaseResources {
 
     private final InventoryService inventoryService;
 
@@ -20,13 +20,13 @@ public class InventoryResources {
     @GetMapping("/item")
     @ResponseBody
     public ItemFetchDto getItems(@RequestParam("pageIndex") int pageIndex) {
-        return inventoryService.getItems(pageIndex);
+        return inventoryService.getItems(getCurrentUsername(), pageIndex);
     }
 
     @GetMapping("/item/{id}")
     @ResponseBody
     public ItemDto getItemById(@PathVariable("id") String id) {
-        return inventoryService.getItemById(id);
+        return inventoryService.getItemById(getCurrentUsername(), id);
     }
 
     @PostMapping("/item")

@@ -28,11 +28,11 @@ class InventoryServiceTest {
     @Mock
     private ItemRepository itemRepository;
     @Mock
-    private UserService settingsRepository;
+    private UserService userService;
 
     @BeforeEach
     void setUp() {
-        objectToTest = new InventoryService(itemRepository, settingsRepository);
+        objectToTest = new InventoryService(itemRepository, userService);
     }
 
     @Test
@@ -67,10 +67,10 @@ class InventoryServiceTest {
             final User settings = Mockito.mock(User.class);
             final String username = "user1";
             ThreadLocalStorage.set(new ThreadLocalStorage(username));
-            Mockito.when(settingsRepository.getById(username)).thenReturn(settings);
+            Mockito.when(userService.getById(username)).thenReturn(settings);
             Mockito.when(settings.isAutoBidActiveFor(Mockito.any(Item.class))).thenReturn(true);
 
-            final ItemFetchDto itemFetchDto = objectToTest.getItems(pageIndex);
+            final ItemFetchDto itemFetchDto = objectToTest.getItems(username, pageIndex);
 
             assertEquals(totalCount, itemFetchDto.totalCount);
             assertEquals(10, itemFetchDto.items.size());
@@ -88,7 +88,7 @@ class InventoryServiceTest {
         final User user = Mockito.mock(User.class);
         final String username = "user1";
         ThreadLocalStorage.set(new ThreadLocalStorage(username));
-        Mockito.when(settingsRepository.getById(username)).thenReturn(user);
+        Mockito.when(userService.getById(username)).thenReturn(user);
         Mockito.when(user.isAutoBidActiveFor(Mockito.any(Item.class))).thenReturn(true);
 
         Item item = Mockito.mock(Item.class);
@@ -96,7 +96,7 @@ class InventoryServiceTest {
         ItemDto expectedItemDto = Mockito.mock(ItemDto.class);
         Mockito.when(item.toDto()).thenReturn(expectedItemDto);
 
-        final ItemDto itemDto = objectToTest.getItemById(itemIdAsString);
+        final ItemDto itemDto = objectToTest.getItemById(username, itemIdAsString);
 
         assertSame(expectedItemDto, itemDto);
         assertTrue(itemDto.isAutoBidActive);

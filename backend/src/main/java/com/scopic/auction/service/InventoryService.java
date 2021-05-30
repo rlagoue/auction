@@ -5,7 +5,6 @@ import com.scopic.auction.domain.User;
 import com.scopic.auction.dto.ItemDto;
 import com.scopic.auction.dto.ItemFetchDto;
 import com.scopic.auction.repository.ItemRepository;
-import com.scopic.auction.utils.ThreadLocalStorage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -19,40 +18,38 @@ import java.util.stream.Collectors;
 
 @Service
 public class InventoryService {
-
     private final ItemRepository itemRepository;
-    private final UserService settingsRepository;
+    private final UserService userService;
 
     @Autowired
-    public InventoryService(ItemRepository itemRepository, UserService settingsRepository) {
+    public InventoryService(ItemRepository itemRepository, UserService userService) {
         this.itemRepository = itemRepository;
-        this.settingsRepository = settingsRepository;
+        this.userService = userService;
     }
 
     @Transactional
-    public ItemFetchDto getItems(int pageIndex) {
+    public ItemFetchDto getItems(String currentUserId, int pageIndex) {
         final Page<Item> items = itemRepository.findAll(
                 PageRequest.of(
                         pageIndex,
                         10,
-                        Sort.by(Sort.Direction.DESC, "time")
+                        Sort.by(Sort.Direction.DESC, "name")
                 )
         );
-        User user = settingsRepository.getById(ThreadLocalStorage.get().get().username);
+        final var currentUser = userService.getById(currentUserId);
         return new ItemFetchDto(
                 items.getTotalElements(),
                 items.getContent()
                         .stream()
-                        .map(new ItemToDto(user))
+                        .map(new ItemToDto(currentUser))
                         .collect(Collectors.toList())
         );
     }
 
     @Transactional
-    public ItemDto getItemById(String itemId) {
-        User user = settingsRepository.getById(ThreadLocalStorage.get().get().username);
+    public ItemDto getItemById(String currentUserId, String itemId) {
         return itemRepository.findById(UUID.fromString(itemId))
-                .map(new ItemToDto(user))
+                .map(new ItemToDto(userService.getById(currentUserId)))
                 .orElse(null);
     }
 
@@ -63,7 +60,7 @@ public class InventoryService {
         return item.getId();
     }
 
-    private class ItemToDto implements Function<Item, ItemDto> {
+    private static class ItemToDto implements Function<Item, ItemDto> {
 
         private final User user;
 
