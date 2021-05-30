@@ -13,7 +13,7 @@ class MoneyTest {
 
     @Test
     public void moneyValueCurrencyFractionDigitsTest() {
-        Long expectedValue = 500l;
+        Long expectedValue = 500L;
         String currencyAsString = "XAF";
         Integer expectedDefaultFractionDigits = 0;
 
@@ -23,7 +23,7 @@ class MoneyTest {
         assertEquals(Currency.getInstance(currencyAsString), getFieldValue(objectToTest, "currency"));
         assertEquals(expectedDefaultFractionDigits, getFieldValue(objectToTest, "defaultFractionDigits"));
 
-        expectedValue = 50020l;
+        expectedValue = 50020L;
         Currency currency = Currency.getInstance("NGN");
         expectedDefaultFractionDigits = 2;
 
@@ -41,7 +41,7 @@ class MoneyTest {
     }
 
     protected void moneyValueCurrencyNotInUpperCaseFractionDigitsTest(String currencyCode) {
-        Long expectedValue = 500l;
+        Long expectedValue = 500L;
         Integer expectedDefaultFractionDigits = 0;
 
         objectToTest = new Money(expectedValue, currencyCode, expectedDefaultFractionDigits);
@@ -53,25 +53,25 @@ class MoneyTest {
 
     @Test
     public void moneyValueCurrencyTest() {
-        moneyValueCurrencyTest("XAF", 4l, 4l, Integer.valueOf(0));
-        moneyValueCurrencyTest("XAF", 4.2d, 4l, Integer.valueOf(0));
-        moneyValueCurrencyTest("XAF", 4.5d, 5l, Integer.valueOf(0));
-        moneyValueCurrencyTest("NGN", 4l, 400l, Integer.valueOf(2));
-        moneyValueCurrencyTest("NGN", 4.05, 405l, Integer.valueOf(2));
-        moneyValueCurrencyTest("CNY", 4l, 400l, Integer.valueOf(2));
-        moneyValueCurrencyTest("CNY", 4.05, 405l, Integer.valueOf(2));
-        moneyValueCurrencyTest("RUB", 4l, 400l, Integer.valueOf(2));
-        moneyValueCurrencyTest("RUB", 4.05, 405l, Integer.valueOf(2));
-        moneyValueCurrencyTest("INR", 4l, 400l, Integer.valueOf(2));
-        moneyValueCurrencyTest("INR", 4.05, 405l, Integer.valueOf(2));
-        moneyValueCurrencyTest("GBP", 4l, 400l, Integer.valueOf(2));
-        moneyValueCurrencyTest("GBP", 4.05, 405l, Integer.valueOf(2));
-        moneyValueCurrencyTest("EUR", 4l, 400l, Integer.valueOf(2));
-        moneyValueCurrencyTest("EUR", 4.05, 405l, Integer.valueOf(2));
-        moneyValueCurrencyTest("USD", 4l, 400l, Integer.valueOf(2));
-        moneyValueCurrencyTest("USD", 4.05, 405l, Integer.valueOf(2));
-        moneyValueCurrencyTest("ZAR", 4l, 400l, Integer.valueOf(2));
-        moneyValueCurrencyTest("ZAR", 4.05, 405l, Integer.valueOf(2));
+        moneyValueCurrencyTest("XAF", 4L, 4L, 0);
+        moneyValueCurrencyTest("XAF", 4.2d, 4L, 0);
+        moneyValueCurrencyTest("XAF", 4.5d, 5L, 0);
+        moneyValueCurrencyTest("NGN", 4L, 400L, 2);
+        moneyValueCurrencyTest("NGN", 4.05, 405L, 2);
+        moneyValueCurrencyTest("CNY", 4L, 400L, 2);
+        moneyValueCurrencyTest("CNY", 4.05, 405L, 2);
+        moneyValueCurrencyTest("RUB", 4L, 400L, 2);
+        moneyValueCurrencyTest("RUB", 4.05, 405L, 2);
+        moneyValueCurrencyTest("INR", 4L, 400L, 2);
+        moneyValueCurrencyTest("INR", 4.05, 405L, 2);
+        moneyValueCurrencyTest("GBP", 4L, 400L, 2);
+        moneyValueCurrencyTest("GBP", 4.05, 405L, 2);
+        moneyValueCurrencyTest("EUR", 4L, 400L, 2);
+        moneyValueCurrencyTest("EUR", 4.05, 405L, 2);
+        moneyValueCurrencyTest("USD", 4L, 400L, 2);
+        moneyValueCurrencyTest("USD", 4.05, 405L, 2);
+        moneyValueCurrencyTest("ZAR", 4L, 400L, 2);
+        moneyValueCurrencyTest("ZAR", 4.05, 405L, 2);
     }
 
     private void moneyValueCurrencyTest(String currencyCode, Number value, Long expectedStoreValue,
@@ -86,7 +86,7 @@ class MoneyTest {
 
     @Test
     public void moneyValueCurrencyCodeTest() {
-        Long expectedValue = 4l;
+        Long expectedValue = 4L;
         String currencyCode = "XAF";
         objectToTest = new Money(expectedValue, currencyCode);
 
@@ -102,19 +102,17 @@ class MoneyTest {
 
     @Test
     public void moneyNullCurrencyTest() {
-        Exception exception = assertThrows(NullPointerException.class, () -> {
-            new Money(4l, (Currency) null);
-        });
+        Exception exception = assertThrows(NullPointerException.class, () -> new Money(4L, (Currency) null));
         assertEquals("Currency cannot be null", exception.getMessage());
     }
 
     @Test
     public void moneyDecimalValueCurrencyCodeTest() {
-        moneyDecimalValueCurrencyCodeTest("XAF", 0, 4.21d, 4l);
-        moneyDecimalValueCurrencyCodeTest("XAF", 0, 4.51d, 5l);
-        moneyDecimalValueCurrencyCodeTest("CNY", 2, 4.21d, 421l);
-        moneyDecimalValueCurrencyCodeTest("CNY", 2, 4.212d, 421l);
-        moneyDecimalValueCurrencyCodeTest("CNY", 2, 4.215d, 422l);
+        moneyDecimalValueCurrencyCodeTest("XAF", 0, 4.21d, 4L);
+        moneyDecimalValueCurrencyCodeTest("XAF", 0, 4.51d, 5L);
+        moneyDecimalValueCurrencyCodeTest("CNY", 2, 4.21d, 421L);
+        moneyDecimalValueCurrencyCodeTest("CNY", 2, 4.212d, 421L);
+        moneyDecimalValueCurrencyCodeTest("CNY", 2, 4.215d, 422L);
     }
 
     private void moneyDecimalValueCurrencyCodeTest(String currencyCode, Integer expectedDefaultFractionDigits,
@@ -159,9 +157,7 @@ class MoneyTest {
 
     @Test
     public void addDifferentCurrencyTest() {
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            new Money(10d, "XAF").add(new Money(20d, "NGN"));
-        });
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> new Money(10d, "XAF").add(new Money(20d, "NGN")));
         assertEquals("Arithmetic operations are not allowed on money with different currency. !! XAF - NGN !!",
                 exception.getMessage());
 
@@ -169,14 +165,12 @@ class MoneyTest {
 
     @Test
     public void addOperandIsNullTest() {
-        Exception exception = assertThrows(NullPointerException.class, () -> {
-            new Money(10d, "XAF").add(null);
-        });
+        Exception exception = assertThrows(NullPointerException.class, () -> new Money(10d, "XAF").add(null));
         assertEquals("Null argument not allowed", exception.getMessage());
     }
 
     @Test
-    public void substractTest() {
+    public void subtractTest() {
         objectToTest = new Money(10d, "XAF");
 
         Money operand = new Money(20d, "XAF");
@@ -191,7 +185,7 @@ class MoneyTest {
     }
 
     @Test
-    public void substractWithDecimalsTest() {
+    public void subtractWithDecimalsTest() {
         objectToTest = new Money(10d, "NGN");
 
         Money operand = new Money(20d, "NGN");
@@ -206,19 +200,15 @@ class MoneyTest {
     }
 
     @Test
-    public void substractDifferentCurrencyTest() {
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            new Money(10d, "XAF").subtract(new Money(20d, "NGN"));
-        });
+    public void subtractDifferentCurrencyTest() {
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> new Money(10d, "XAF").subtract(new Money(20d, "NGN")));
         assertEquals("Arithmetic operations are not allowed on money with different currency. !! XAF - NGN !!",
                 exception.getMessage());
     }
 
     @Test
-    public void substractOperandIsNullTest() {
-        Exception exception = assertThrows(NullPointerException.class, () -> {
-            new Money(10d, "XAF").subtract(null);
-        });
+    public void subtractOperandIsNullTest() {
+        Exception exception = assertThrows(NullPointerException.class, () -> new Money(10d, "XAF").subtract(null));
         assertEquals("Null argument not allowed", exception.getMessage());
     }
 

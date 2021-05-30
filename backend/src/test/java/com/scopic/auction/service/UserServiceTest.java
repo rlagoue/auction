@@ -38,13 +38,15 @@ class UserServiceTest {
     void getSettingsTest() {
         final String username = "username";
 
+        final var spiedObjectToTest = Mockito.spy(objectToTest);
+
         User user = Mockito.mock(User.class);
-        Mockito.when(userRepository.findById(username))
-                .thenReturn(Optional.of(user));
+        Mockito.doReturn(user).when(spiedObjectToTest).getById(username);
+
         SettingsDto expected = Mockito.mock(SettingsDto.class);
         Mockito.when(user.getSettings()).thenReturn(expected);
 
-        final SettingsDto settingsDto = objectToTest.getSettings(username);
+        final SettingsDto settingsDto = spiedObjectToTest.getSettings(username);
 
         assertSame(expected, settingsDto);
     }

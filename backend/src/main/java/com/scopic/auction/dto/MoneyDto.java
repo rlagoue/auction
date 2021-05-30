@@ -8,6 +8,11 @@ public class MoneyDto {
     public MoneyDto() {
     }
 
+    public MoneyDto(Number value, String currency) {
+        this.value = value;
+        this.currency = currency;
+    }
+
     public MoneyDto(Number value, String currency, int defaultFractionDigits) {
         this.currency = currency;
         this.defaultFractionDigits = defaultFractionDigits;

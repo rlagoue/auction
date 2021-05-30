@@ -2,10 +2,10 @@ package com.scopic.auction.repository.jpa;
 
 import com.scopic.auction.domain.Money;
 import com.scopic.auction.dto.MoneyDto;
-import org.springframework.util.StringUtils;
 
 import javax.persistence.AttributeConverter;
 import javax.persistence.Converter;
+import java.util.Objects;
 
 @Converter(autoApply = true)
 public class MoneyConverter implements AttributeConverter<Money, String> {
@@ -15,20 +15,15 @@ public class MoneyConverter implements AttributeConverter<Money, String> {
         if (attribute == null) {
             return null;
         }
-        MoneyDto data = attribute.toDto();
-        try {
-            return data.currency + ";"
-                    + data.defaultFractionDigits + ";"
-                    + data.value;
-        } catch (Throwable e) {
-            throw new IllegalArgumentException("Money object passed is not well formatted to be serialized to String",
-                    e);
-        }
+        MoneyDto data = attribute.toDto(true);
+        return data.currency + ";"
+                + data.defaultFractionDigits + ";"
+                + data.value;
     }
 
     @Override
     public Money convertToEntityAttribute(String dbData) {
-        if (StringUtils.isEmpty(dbData)) {
+        if (Objects.isNull(dbData) || dbData.length() == 0) {
             return null;
         }
         String[] split = dbData.split(";");

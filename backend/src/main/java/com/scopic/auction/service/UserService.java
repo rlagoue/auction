@@ -46,9 +46,7 @@ public class UserService {
 
     @Transactional
     public SettingsDto getSettings(String username) {
-        return this.userRepository.findById(username)
-                .map(User::getSettings)
-                .orElseThrow();
+        return getById(username).getSettings();
     }
 
     @Transactional

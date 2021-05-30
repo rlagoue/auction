@@ -13,13 +13,9 @@ public class Money {
     private long value;
 
     public Money(Long value, Currency currency, Integer defaultFractionDigits) {
-        this.value = value == null ? 0l : value;
+        this.value = value == null ? 0L : value;
         this.currency = Objects.requireNonNull(currency, "Currency cannot be null");
-        if (defaultFractionDigits == null) {
-            this.defaultFractionDigits = computeDefaultFractionDigits();
-        } else {
-            this.defaultFractionDigits = defaultFractionDigits;
-        }
+        this.defaultFractionDigits = Objects.requireNonNullElseGet(defaultFractionDigits, this::computeDefaultFractionDigits);
     }
 
     public Money(Long value, String currencyCode, Integer defaultFractionDigits) {
@@ -118,13 +114,20 @@ public class Money {
 
     public Money multiplyBy(double operand) {
         return new Money(
-                BigDecimal.valueOf(this.computeOriginalValue().doubleValue()).multiply(BigDecimal.valueOf(operand)),
-                currency);
+                BigDecimal.valueOf(
+                        this.computeOriginalValue().doubleValue()).multiply(BigDecimal.valueOf(operand)
+                ),
+                currency
+        );
     }
 
     public MoneyDto toDto() {
+        return toDto(false);
+    }
+
+    public MoneyDto toDto(boolean asIs) {
         return new MoneyDto(
-                computeOriginalValue().longValue(),
+                asIs ? this.value : computeOriginalValue().longValue(),
                 this.currency.getCurrencyCode(),
                 defaultFractionDigits
         );
