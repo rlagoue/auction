@@ -81,10 +81,18 @@ class AuctionResourcesTest extends BaseResourcesTest {
     @Test
     void activateAutoBidOnItemTest() {
         final String itemId = UUID.randomUUID().toString();
-        final String username = "username";
 
-        objectToTest.activateAutoBidOnItem(username, itemId);
+        objectToTest.activateAutoBidOnItem(itemId);
 
-        Mockito.verify(userService).activateAutoBidOnItem(username, itemId);
+        Mockito.verify(userService).activateAutoBidOnItem(CURRENT_USER, itemId);
+    }
+
+    @Test
+    void deactivateAutoBidOnItemTest() {
+        final String itemId = UUID.randomUUID().toString();
+
+        objectToTest.deactivateAutoBidOnItem(itemId);
+
+        Mockito.verify(userService).deactivateAutoBidOnItem(CURRENT_USER, itemId);
     }
 }

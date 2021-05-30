@@ -88,13 +88,13 @@ public class User {
     private void bidObservedItems() {
         autoBidItems.stream()
                 .filter(
-                        item -> !leadingBids.stream()
-                                .anyMatch(bid -> bid.isAbout(item))
+                        item -> leadingBids.stream()
+                                .noneMatch(bid -> bid.isAbout(item))
                 )
                 .forEach(item -> item.makeNextPossibleBid(this));
     }
 
-    public void activateAutoBid(Item item) {
+    public void activateAutoBidOn(Item item) {
         if (this.autoBidItems.contains(item)) {
             return;
         }
@@ -116,7 +116,7 @@ public class User {
                 this.leadingBids.stream()
                         .filter(
                                 bid -> this.autoBidItems.stream()
-                                        .anyMatch(item -> bid.isAbout(item))
+                                        .anyMatch(bid::isAbout)
                         )
                         .collect(Collectors.toSet())
         );
@@ -180,5 +180,12 @@ public class User {
             );
         }
         return Optional.of(result);
+    }
+
+    public void deactivateAutoBidOn(Item item) {
+        if (leadingBids.stream().anyMatch(bid -> bid.isAbout(item))) {
+            throw new IllegalStateException("CannotDeactivateAutoBidOnItemWhenLeading");
+        }
+        autoBidItems.remove(item);
     }
 }

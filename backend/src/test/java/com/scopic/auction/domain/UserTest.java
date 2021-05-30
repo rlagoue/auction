@@ -147,7 +147,7 @@ class UserTest {
         Mockito.when(bid.isAbout(item)).thenReturn(true);
         setFieldValue(objectToTest, "leadingBids", Set.of(bid));
 
-        objectToTest.activateAutoBid(item);
+        objectToTest.activateAutoBidOn(item);
 
         autoBidItems = getFieldValue(objectToTest, "autoBidItems");
         assertEquals(size + 1, autoBidItems.size());
@@ -426,6 +426,53 @@ class UserTest {
             assertTrue(leadingBids.contains(bid1));
         }
 
+    }
+
+    @Test
+    void deactivateAutoBidTest() {
+        final var item1 = Mockito.mock(Item.class);
+        final var item2 = Mockito.mock(Item.class);
+        Set<Item> autoBidItems = getFieldValue(objectToTest, "autoBidItems");
+        autoBidItems.add(item1);
+        autoBidItems.add(item2);
+        int size = autoBidItems.size();
+
+        final Bid bid = Mockito.mock(Bid.class);
+        setFieldValue(objectToTest, "leadingBids", Set.of(bid));
+
+        objectToTest.deactivateAutoBidOn(item2);
+
+        autoBidItems = getFieldValue(objectToTest, "autoBidItems");
+        assertEquals(size - 1, autoBidItems.size());
+        assertTrue(autoBidItems.contains(item1));
+    }
+
+    @Test
+    void deactivateAutoBidOnItemWhenLeadingTest() {
+        final var item1 = Mockito.mock(Item.class);
+        final var item2 = Mockito.mock(Item.class);
+        Set<Item> autoBidItems = getFieldValue(objectToTest, "autoBidItems");
+        autoBidItems.add(item1);
+        autoBidItems.add(item2);
+        int size = autoBidItems.size();
+
+        final Bid bid = Mockito.mock(Bid.class);
+        setFieldValue(objectToTest, "leadingBids", Set.of(bid));
+
+        Mockito.when(bid.isAbout(item2)).thenReturn(true);
+
+
+        final var exception = assertThrows(
+                IllegalStateException.class,
+                () -> objectToTest.deactivateAutoBidOn(item2)
+        );
+
+        assertEquals("CannotDeactivateAutoBidOnItemWhenLeading", exception.getMessage());
+
+        autoBidItems = getFieldValue(objectToTest, "autoBidItems");
+        assertEquals(size, autoBidItems.size());
+        assertTrue(autoBidItems.contains(item1));
+        assertTrue(autoBidItems.contains(item2));
     }
 
 }

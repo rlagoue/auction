@@ -56,7 +56,16 @@ public class UserService {
         final User user = getById(username);
         final Item item = itemRepository.findById(UUID.fromString(itemId))
                 .orElseThrow();
-        user.activateAutoBid(item);
+        user.activateAutoBidOn(item);
+        userRepository.saveAndFlush(user);
+    }
+
+    @Transactional
+    public void deactivateAutoBidOnItem(String username, String itemId) {
+        final User user = getById(username);
+        final Item item = itemRepository.findById(UUID.fromString(itemId))
+                .orElseThrow();
+        user.deactivateAutoBidOn(item);
         userRepository.saveAndFlush(user);
     }
 

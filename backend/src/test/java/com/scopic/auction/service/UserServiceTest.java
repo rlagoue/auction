@@ -88,26 +88,6 @@ class UserServiceTest {
     }
 
     @Test
-    void activateAutoBidOnItemTest() {
-        final UUID itemId = UUID.randomUUID();
-        final String itemIdAsString = itemId.toString();
-        final String username = "username";
-        final Item item = Mockito.mock(Item.class);
-        User user = Mockito.mock(User.class);
-
-        Mockito.when(itemRepository.findById(itemId))
-                .thenReturn(Optional.of(item));
-
-        final UserService spiedObjectToTest = Mockito.spy(objectToTest);
-        Mockito.doReturn(user).when(spiedObjectToTest).getById(username);
-
-        spiedObjectToTest.activateAutoBidOnItem(username, itemIdAsString);
-
-        Mockito.verify(user).activateAutoBid(item);
-        Mockito.verify(userRepository).saveAndFlush(user);
-    }
-
-    @Test
     void makeABidSuccessfullyTest() {
         final String username = "user1";
         final long newBidValue = 100L;
@@ -130,5 +110,45 @@ class UserServiceTest {
                 new Money(newBidValue, "USD")
         );
         Mockito.verify(itemRepository).saveAndFlush(item);
+    }
+
+    @Test
+    void activateAutoBidOnItemTest() {
+        final UUID itemId = UUID.randomUUID();
+        final String itemIdAsString = itemId.toString();
+        final String username = "username";
+        final Item item = Mockito.mock(Item.class);
+        User user = Mockito.mock(User.class);
+
+        Mockito.when(itemRepository.findById(itemId))
+                .thenReturn(Optional.of(item));
+
+        final UserService spiedObjectToTest = Mockito.spy(objectToTest);
+        Mockito.doReturn(user).when(spiedObjectToTest).getById(username);
+
+        spiedObjectToTest.activateAutoBidOnItem(username, itemIdAsString);
+
+        Mockito.verify(user).activateAutoBidOn(item);
+        Mockito.verify(userRepository).saveAndFlush(user);
+    }
+
+    @Test
+    void deactivateAutoBidOnItemTest() {
+        final UUID itemId = UUID.randomUUID();
+        final String itemIdAsString = itemId.toString();
+        final String username = "username";
+        final Item item = Mockito.mock(Item.class);
+        User user = Mockito.mock(User.class);
+
+        Mockito.when(itemRepository.findById(itemId))
+                .thenReturn(Optional.of(item));
+
+        final UserService spiedObjectToTest = Mockito.spy(objectToTest);
+        Mockito.doReturn(user).when(spiedObjectToTest).getById(username);
+
+        spiedObjectToTest.deactivateAutoBidOnItem(username, itemIdAsString);
+
+        Mockito.verify(user).deactivateAutoBidOn(item);
+        Mockito.verify(userRepository).saveAndFlush(user);
     }
 }

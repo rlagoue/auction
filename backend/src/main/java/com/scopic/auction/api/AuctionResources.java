@@ -23,7 +23,7 @@ public class AuctionResources extends BaseResources {
     @PostMapping("/item/{itemId}/bid/{bid}")
     @ResponseBody
     public String makeABid(
-            @PathVariable("itemID") String itemId,
+            @PathVariable("itemId") String itemId,
             @PathVariable("bid") Number bid
     ) {
         return auctionService.makeABid(itemId, bid, getCurrentUsername());
@@ -49,11 +49,13 @@ public class AuctionResources extends BaseResources {
         }
     }
 
-    @PostMapping("/user/{username}/activate-auto-bid/{itemId}")
-    public void activateAutoBidOnItem(
-            @PathVariable("username") String username,
-            @PathVariable("itemId") String itemId
-    ) {
-        userService.activateAutoBidOnItem(username, itemId);
+    @PostMapping("/activate-auto-bid/{itemId}")
+    public void activateAutoBidOnItem(@PathVariable("itemId") String itemId) {
+        userService.activateAutoBidOnItem(getCurrentUsername(), itemId);
+    }
+
+    @PostMapping("/activate-auto-bid/{itemId}")
+    public void deactivateAutoBidOnItem(@PathVariable("itemId") String itemId) {
+        userService.deactivateAutoBidOnItem(getCurrentUsername(), itemId);
     }
 }

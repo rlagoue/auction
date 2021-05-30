@@ -8,7 +8,7 @@ public abstract class BaseResourcesTest {
     public static final String CURRENT_USER = "user1";
 
     @BeforeEach
-    void setUp() {
+    void setUpCurrentUser() {
         ThreadLocalStorage.set(new ThreadLocalStorage(CURRENT_USER));
     }
 }
