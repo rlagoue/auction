@@ -9,8 +9,6 @@ import java.util.stream.Collectors;
 @Entity
 @Table(name = "t_item")
 public class Item extends BaseDomainObject {
-    @OneToMany(mappedBy = "item")
-    private final Set<Bid> bids = new HashSet<>();
     @Column(name = "c_name")
     private String name;
     @Column(name = "c_description")
@@ -18,6 +16,8 @@ public class Item extends BaseDomainObject {
     @ManyToOne
     @JoinColumn(name = "c_currentbidder", referencedColumnName = "c_username")
     private User leadingBidder;
+    @OneToMany(mappedBy = "item", cascade = CascadeType.ALL)
+    private final Set<Bid> bids = new HashSet<>();
 
     public Item() {
     }
@@ -76,8 +76,9 @@ public class Item extends BaseDomainObject {
     }
 
     public boolean isCurrentBidBiggerThan(Money amount) {
-        final var newestBid = getNewestBid();
-        return newestBid.map(bid -> bid.isBiggerThan(amount)).orElse(false);
+        return getNewestBid()
+                .map(bid -> bid.isBiggerThan(amount))
+                .orElse(Money.ZERO_USD.isBiggerThan(amount));
     }
 
     private Optional<Bid> getNewestBid() {

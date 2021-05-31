@@ -44,7 +44,7 @@ class UserServiceTest {
         final var spiedObjectToTest = Mockito.spy(objectToTest);
 
         User user = mock(User.class);
-        Mockito.doReturn(user).when(spiedObjectToTest).getById(username);
+        doReturn(user).when(spiedObjectToTest).getById(username);
 
         SettingsDto expected = mock(SettingsDto.class);
         when(user.getSettings()).thenReturn(expected);
@@ -65,11 +65,15 @@ class UserServiceTest {
         User user = mock(User.class);
 
         final UserService spiedObjectToTest = Mockito.spy(objectToTest);
-        Mockito.doReturn(user).when(spiedObjectToTest).getById(username);
+        doReturn(user).when(spiedObjectToTest).getById(username);
+
+        final var bid1 = mock(Bid.class);
+        final var bid2 = mock(Bid.class);
+        when(user.update(new Money(value, "USD"))).thenReturn(List.of(bid1, bid2));
 
         spiedObjectToTest.updateSettings(username, data);
 
-        verify(user).update(new Money(value, "USD"));
+        verify(bidRepository).saveAll(List.of(bid1, bid2));
         verify(userRepository).saveAndFlush(user);
     }
 
@@ -170,17 +174,20 @@ class UserServiceTest {
         final String itemIdAsString = itemId.toString();
         final String username = "username";
         final Item item = mock(Item.class);
-        User user = mock(User.class);
 
         when(itemRepository.findById(itemId))
                 .thenReturn(Optional.of(item));
 
         final UserService spiedObjectToTest = Mockito.spy(objectToTest);
-        Mockito.doReturn(user).when(spiedObjectToTest).getById(username);
+        User user = mock(User.class);
+        doReturn(user).when(spiedObjectToTest).getById(username);
+        final var bid1 = mock(Bid.class);
+        final var bid2 = mock(Bid.class);
+        when(user.activateAutoBidOn(item)).thenReturn(List.of(bid1, bid2));
 
         spiedObjectToTest.activateAutoBidOnItem(username, itemIdAsString);
 
-        verify(user).activateAutoBidOn(item);
+        verify(bidRepository).saveAll(List.of(bid1, bid2));
         verify(itemRepository).save(item);
         verify(userRepository).save(user);
     }
@@ -197,7 +204,7 @@ class UserServiceTest {
                 .thenReturn(Optional.of(item));
 
         final UserService spiedObjectToTest = Mockito.spy(objectToTest);
-        Mockito.doReturn(user).when(spiedObjectToTest).getById(username);
+        doReturn(user).when(spiedObjectToTest).getById(username);
 
         spiedObjectToTest.deactivateAutoBidOnItem(username, itemIdAsString);
 

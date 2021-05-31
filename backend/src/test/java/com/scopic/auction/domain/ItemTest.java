@@ -184,9 +184,13 @@ class ItemTest {
     }
 
     @Test
-    void isCurrentBidBiggerThanWheNoBidPresentTest() {
-        Money amount = mock(Money.class);
-        assertFalse(objectToTest.isCurrentBidBiggerThan(amount));
+    void isCurrentBidBiggerThanWhenNoBidPresentTest() {
+        assertFalse(objectToTest.isCurrentBidBiggerThan(Money.ZERO_USD.nextAmount()));
+    }
+
+    @Test
+    void isCurrentBidBiggerThanWhenNoBidPresentAndAmountIsZeroTest() {
+        assertTrue(objectToTest.isCurrentBidBiggerThan(Money.ZERO_USD));
     }
 
     @Test

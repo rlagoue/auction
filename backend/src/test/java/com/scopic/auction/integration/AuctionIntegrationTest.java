@@ -87,6 +87,58 @@ class AuctionIntegrationTest extends BaseIntegrationTest {
         assertLastBidIs(bidder2, 26, itemDto.bids);
     }
 
+
+    @Test
+    public void autoBidWhenActivatingAutoBidBeforeSetMaxBidAmountTest() {
+        final var itemId = createItem("auto-bid-name", "auto-bid-description");
+
+        var itemDto = fetchItemById(itemId);
+        assertEquals(0, itemDto.bids.size());
+
+        final var bidder1 = "autoBidActivationBeforeUser1";
+        setupHeaders(bidder1);
+        activateAutoBidOn(itemId);
+        itemDto = fetchItemById(itemId);
+        assertEquals(0, itemDto.bids.size());
+
+        setMaxBidAmount(20, bidder1);
+        itemDto = fetchItemById(itemId);
+        assertEquals(1, itemDto.bids.size());
+        assertLastBidIs(bidder1, 1, itemDto.bids);
+
+        final var bidder2 = "autoBidActivationBeforeUser2";
+        setupHeaders(bidder2);
+        activateAutoBidOn(itemId);
+        itemDto = fetchItemById(itemId);
+        assertEquals(1, itemDto.bids.size());
+        assertLastBidIs(bidder1, 1, itemDto.bids);
+
+        setMaxBidAmount(40, bidder2);
+        itemDto = fetchItemById(itemId);
+        assertEquals(2, itemDto.bids.size());
+        assertContainsBid(bidder1, 1, itemDto.bids);
+        assertLastBidIs(bidder2, 21, itemDto.bids);
+
+        final var bidder3 = "autoBidActivationBeforeUser3";
+        assertEquals("outbidded", makeBid(bidder3, itemId, 25));
+        itemDto = fetchItemById(itemId);
+        assertEquals(4, itemDto.bids.size());
+        assertContainsBid(bidder1, 1, itemDto.bids);
+        assertContainsBid(bidder2, 21, itemDto.bids);
+        assertContainsBid(bidder3, 25, itemDto.bids);
+        assertLastBidIs(bidder2, 26, itemDto.bids);
+
+        final var bidder4 = "autoBidActivationBeforeUser4";
+        assertEquals("success", makeBid(bidder4, itemId, 42));
+        itemDto = fetchItemById(itemId);
+        assertEquals(5, itemDto.bids.size());
+        assertContainsBid(bidder1, 1, itemDto.bids);
+        assertContainsBid(bidder2, 21, itemDto.bids);
+        assertContainsBid(bidder3, 25, itemDto.bids);
+        assertContainsBid(bidder2, 26, itemDto.bids);
+        assertLastBidIs(bidder4, 42, itemDto.bids);
+    }
+
     private void activateAutoBidOn(String itemId) {
         testRestTemplate.postForObject("/activate-auto-bid/{itemId}", null, Void.class, itemId);
     }

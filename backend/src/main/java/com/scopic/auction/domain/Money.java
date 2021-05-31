@@ -63,32 +63,16 @@ public class Money {
     }
 
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((currency == null) ? 0 : currency.hashCode());
-        result = prime * result + defaultFractionDigits;
-        result = prime * result + (int) (value ^ (value >>> 32));
-        return result;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Money)) return false;
+        Money money = (Money) o;
+        return defaultFractionDigits == money.defaultFractionDigits && value == money.value && currency.equals(money.currency);
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        Money other = (Money) obj;
-        if (currency == null) {
-            if (other.currency != null)
-                return false;
-        } else if (!currency.equals(other.currency))
-            return false;
-        if (defaultFractionDigits != other.defaultFractionDigits)
-            return false;
-        return value == other.value;
+    public int hashCode() {
+        return Objects.hash(currency, defaultFractionDigits, value);
     }
 
     public Money add(Money operand) {

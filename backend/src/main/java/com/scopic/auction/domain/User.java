@@ -25,14 +25,14 @@ public class User {
             joinColumns = @JoinColumn(name = "c_user"),
             inverseJoinColumns = @JoinColumn(name = "c_item")
     )
-    private Set<Item> autoBidItems = new HashSet<>();
-    @OneToMany
+    private final Set<Item> autoBidItems = new HashSet<>();
+    @OneToMany(cascade = CascadeType.PERSIST)
     @JoinTable(
             name = "t_leadingBids",
             joinColumns = @JoinColumn(name = "c_user"),
             inverseJoinColumns = @JoinColumn(name = "c_bid")
     )
-    private Set<Bid> leadingBids = new HashSet<>();
+    private final Set<Bid> leadingBids = new HashSet<>();
 
     public User() {
     }
@@ -69,23 +69,21 @@ public class User {
         return result;
     }
 
-    public void update(Money maxBidAmount) throws InvalidNewMaxBidAmountException {
+    public Collection<Bid> update(Money maxBidAmount) throws InvalidNewMaxBidAmountException {
         if (getAutoBidTotalEngagement().isBiggerThan(maxBidAmount)) {
             throw new InvalidNewMaxBidAmountException(
                     "newMaxBidAmountSmallerThanCurrentEngagement"
             );
         }
         this.maxBidAmount = maxBidAmount;
-        bidObservedItems();
+        return bidObservedItems();
     }
 
-    private void bidObservedItems() {
-        autoBidItems.stream()
-                .filter(
-                        item -> leadingBids.stream()
-                                .noneMatch(bid -> bid.isAbout(item))
-                )
-                .forEach(item -> item.tryAutoBidFor(this));
+    private Collection<Bid> bidObservedItems() {
+        return autoBidItems.stream()
+                .filter(item -> leadingBids.stream().noneMatch(bid -> bid.isAbout(item)))
+                .flatMap(item -> item.tryAutoBidFor(this).stream())
+                .collect(Collectors.toSet());
     }
 
     public Collection<Bid> activateAutoBidOn(Item item) {
@@ -112,10 +110,7 @@ public class User {
     private Money getAutoBidTotalEngagement() {
         return Bid.sum(
                 this.leadingBids.stream()
-                        .filter(
-                                bid -> this.autoBidItems.stream()
-                                        .anyMatch(bid::isAbout)
-                        )
+                        .filter(bid -> this.autoBidItems.stream().anyMatch(bid::isAbout))
                         .collect(Collectors.toSet())
         );
     }
