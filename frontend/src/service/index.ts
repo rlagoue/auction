@@ -91,16 +91,16 @@ const saveSettings = async (settings: Settings, user: User) => {
     return response.data;
 }
 
-const activateAutoBid = async (itemId: string, user: User) => {
+const activateAutoBid = async (itemId: string) => {
     const response = await axiosInstance.post(
-        "/user/" + user.username + "/activate-auto-bid/" + itemId,
+        "/activate-auto-bid/" + itemId,
     );
     return response.data;
 }
 
-const deactivateAutoBid = async (itemId: string, user: User) => {
+const deactivateAutoBid = async (itemId: string) => {
     const response = await axiosInstance.post(
-        "/user/" + user.username + "/deactivate-auto-bid/" + itemId,
+        "/deactivate-auto-bid/" + itemId,
     );
     return response.data;
 }

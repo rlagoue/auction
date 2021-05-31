@@ -115,7 +115,7 @@ describe("Auto bid support", () => {
         cy.intercept(
             {
                 method: "POST",
-                url: "**/user/user4/activate-auto-bid/itemBidId1",
+                url: "**/activate-auto-bid/itemBidId1",
             },
             {
                 statusCode: 200,

@@ -84,10 +84,10 @@ export const useStore = defineStore({
             await services.saveSettings(settings, this.currentUser);
         },
         async activateAutoBid(itemId: string): Promise<void> {
-            await services.activateAutoBid(itemId, this.currentUser);
+            await services.activateAutoBid(itemId);
         },
         async deactivateAutoBid(itemId: string): Promise<void> {
-            await services.deactivateAutoBid(itemId, this.currentUser);
+            await services.deactivateAutoBid(itemId);
         }
     }
 });
