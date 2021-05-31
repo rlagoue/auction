@@ -4,7 +4,10 @@ import {User} from "../domain/User";
 import {Settings} from "../domain/Settings";
 
 const axiosInstance = axios.create({
-    baseURL: <string>import.meta.env.VITE_REST_API_BASE_URL
+    baseURL: <string>import.meta.env.VITE_REST_API_BASE_URL,
+    headers: {
+        "User-Agent": localStorage.getItem("username")
+    }
 })
 
 const login = async (

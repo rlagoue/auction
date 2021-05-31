@@ -92,11 +92,11 @@
       </div>
       <div class="flex center-items justify-center">
         <span
-            v-if="state.displayOutbiddedErrorMessage"
+            v-if="state.biddingFeedbackMessage"
             class="text-2xl text-red-700 font-bold"
             data-test-id="make-bid-error-message"
         >
-          !!!You have been outbidded!!!
+          {{ state.biddingFeedbackMessage }}
         </span>
       </div>
       <table
@@ -146,7 +146,7 @@ import {Currency} from "../../domain/Currency";
 type State = {
   item: Item,
   bidFormDisplayed: boolean,
-  displayOutbiddedErrorMessage: boolean,
+  biddingFeedbackMessage: string,
 }
 
 export default {
@@ -159,7 +159,7 @@ export default {
     const state = reactive<State>({
       item: Item.Null,
       bidFormDisplayed: false,
-      displayOutbiddedErrorMessage: false,
+      biddingFeedbackMessage: "",
     });
 
     onBeforeMount(async () => {
@@ -200,8 +200,9 @@ export default {
 
     const {utcDateTimeToLocalString, localDateToUtc} = useDateTimeUtils();
 
+    const clearBiddingFeedbackMessage = () => state.biddingFeedbackMessage = "";
     const makeBid = async () => {
-      hideOutbiddedErroMessage();
+      clearBiddingFeedbackMessage();
       const result = await store.makeBid(itemId, newBid.value);
       if (result === "success") {
         state.item.bids.push(
@@ -215,13 +216,16 @@ export default {
         displayOutbiddedErroMessage();
         hideBidForm();
         await fetchData();
+      } else if (result === "original-state-changed") {
+        displayOriginalStateChangedMessage();
+        await fetchData();
       }
 
     };
     const displayOutbiddedErroMessage = () =>
-        state.displayOutbiddedErrorMessage = true;
-    const hideOutbiddedErroMessage = () =>
-        state.displayOutbiddedErrorMessage = false;
+        state.biddingFeedbackMessage = "!!!You have been outbidded!!!";
+    const displayOriginalStateChangedMessage = () =>
+        state.biddingFeedbackMessage = "!!! The state of the item has changed, please check the new state before your next att!!!";
     const hideBidForm = () => state.bidFormDisplayed = false;
     const activateAutoBid = async () => {
       await store.activateAutoBid(itemId);
