@@ -128,6 +128,5 @@ class InventoryServiceTest {
             final var createdItem = itemMockedConstruction.constructed().get(0);
             Mockito.verify(itemRepository).saveAndFlush(createdItem);
         }
-
     }
 }

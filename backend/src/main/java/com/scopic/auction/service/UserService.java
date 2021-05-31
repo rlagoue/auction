@@ -1,6 +1,9 @@
 package com.scopic.auction.service;
 
-import com.scopic.auction.domain.*;
+import com.scopic.auction.domain.InvalidNewMaxBidAmountException;
+import com.scopic.auction.domain.Item;
+import com.scopic.auction.domain.Money;
+import com.scopic.auction.domain.User;
 import com.scopic.auction.dto.SettingsDto;
 import com.scopic.auction.repository.BidRepository;
 import com.scopic.auction.repository.ItemRepository;
@@ -9,8 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collection;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -56,7 +57,10 @@ public class UserService {
         final User user = getById(username);
         final Item item = itemRepository.findById(UUID.fromString(itemId))
                 .orElseThrow();
-        user.activateAutoBidOn(item).ifPresent(bid -> bidRepository.save(bid));
+        final var bids = user.activateAutoBidOn(item);
+        if (!bids.isEmpty()) {
+            bidRepository.saveAll(bids);
+        }
         itemRepository.save(item);
         userRepository.save(user);
     }

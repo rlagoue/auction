@@ -73,6 +73,18 @@ class AuctionIntegrationTest extends BaseIntegrationTest {
         assertEquals(2, itemDto.bids.size());
         assertContainsBid(bidder1, 1, itemDto.bids);
         assertLastBidIs(bidder2, 21, itemDto.bids);
+
+        final var bidder3 = "autoBidUser3";
+        setupHeaders(bidder3);
+        setMaxBidAmount(25, bidder3);
+        activateAutoBidOn(itemId);
+
+        itemDto = fetchItemById(itemId);
+        assertEquals(4, itemDto.bids.size());
+        assertContainsBid(bidder1, 1, itemDto.bids);
+        assertContainsBid(bidder2, 21, itemDto.bids);
+        assertContainsBid(bidder3, 25, itemDto.bids);
+        assertLastBidIs(bidder2, 26, itemDto.bids);
     }
 
     private void activateAutoBidOn(String itemId) {

@@ -50,27 +50,29 @@ public class Item extends BaseDomainObject {
     Collection<Bid> registerNewBid(Bid bid, User newBidder) {
         Collection<Bid> newBids = new ArrayList<>(2);
         var previousLeadingBidder = this.leadingBidder;
-        addBid(bid, newBidder, newBids);
-        this.leadingBidder = newBidder;
+        addNewBids(List.of(bid), newBidder, newBids);
         if (previousLeadingBidder != null) {
-            final var outBid = previousLeadingBidder.tryToOutbidOn(this, Optional.of(newBidder));
-            outBid.ifPresent(newBid -> this.addBid(newBid, previousLeadingBidder, newBids));
+            final var bids = previousLeadingBidder.tryToOutbidOn(this, Optional.of(newBidder));
+            addNewBids(bids, previousLeadingBidder, newBids);
         }
         return newBids;
     }
 
-    private Bid addBid(Bid bid, User newLeadBidder, Collection<Bid> newBids) {
-        this.leadingBidder = newLeadBidder;
-        this.bids.add(bid);
-        newBids.add(bid);
-        return bid;
+    private Collection<Bid> addNewBids(Collection<Bid> bids, User newLeadBidder, Collection<Bid> newBids) {
+        if (!bids.isEmpty()) {
+            this.leadingBidder = newLeadBidder;
+        }
+        this.bids.addAll(bids);
+        newBids.addAll(bids);
+        return bids;
     }
 
-    public Optional<Bid> tryAutoBidFor(User newBidder) {
-        return newBidder.tryToOutbidOn(
+    public Collection<Bid> tryAutoBidFor(User newBidder) {
+        final var bids = newBidder.tryToOutbidOn(
                 this,
                 Optional.ofNullable(this.leadingBidder)
-        ).map(bid -> addBid(bid, newBidder, new ArrayList<>()));
+        );
+        return addNewBids(bids, newBidder, new ArrayList<>());
     }
 
     public boolean isCurrentBidBiggerThan(Money amount) {

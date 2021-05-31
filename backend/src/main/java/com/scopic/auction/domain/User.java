@@ -6,29 +6,12 @@ import com.scopic.auction.repository.jpa.MoneyConverter;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "t_user")
 public class User {
-    @ManyToMany
-    @JoinTable(
-            name = "t_autobiditems",
-            joinColumns = @JoinColumn(name = "c_user"),
-            inverseJoinColumns = @JoinColumn(name = "c_item")
-    )
-    private final Set<Item> autoBidItems = new HashSet<>();
-    @OneToMany
-    @JoinTable(
-            name = "t_leadingBids",
-            joinColumns = @JoinColumn(name = "c_user"),
-            inverseJoinColumns = @JoinColumn(name = "c_bid")
-    )
-    private final Set<Bid> leadingBids = new HashSet<>();
     @Id
     @Column(name = "c_username")
     private String username;
@@ -36,6 +19,20 @@ public class User {
     @Column(name = "c_maxbidamount")
     @Convert(converter = MoneyConverter.class)
     private Money maxBidAmount;
+    @ManyToMany
+    @JoinTable(
+            name = "t_autobiditems",
+            joinColumns = @JoinColumn(name = "c_user"),
+            inverseJoinColumns = @JoinColumn(name = "c_item")
+    )
+    private Set<Item> autoBidItems = new HashSet<>();
+    @OneToMany
+    @JoinTable(
+            name = "t_leadingBids",
+            joinColumns = @JoinColumn(name = "c_user"),
+            inverseJoinColumns = @JoinColumn(name = "c_bid")
+    )
+    private Set<Bid> leadingBids = new HashSet<>();
 
     public User() {
     }
@@ -73,15 +70,12 @@ public class User {
     }
 
     public void update(Money maxBidAmount) throws InvalidNewMaxBidAmountException {
-        if (!this.leadingBids.isEmpty() &&
-                getAutoBidTotalEngagement().isBiggerThan(maxBidAmount)
-        ) {
+        if (getAutoBidTotalEngagement().isBiggerThan(maxBidAmount)) {
             throw new InvalidNewMaxBidAmountException(
                     "newMaxBidAmountSmallerThanCurrentEngagement"
             );
         }
         this.maxBidAmount = maxBidAmount;
-
         bidObservedItems();
     }
 
@@ -94,9 +88,12 @@ public class User {
                 .forEach(item -> item.tryAutoBidFor(this));
     }
 
-    public Optional<Bid> activateAutoBidOn(Item item) {
+    public Collection<Bid> activateAutoBidOn(Item item) {
         if (this.autoBidItems.contains(item)) {
-            return Optional.empty();
+            return Collections.emptyList();
+        }
+        if (leadingBids.stream().anyMatch(bid -> bid.isAbout(item))) {
+            throw new UnsupportedOperationException("CannotActivateAutoBidWhenBeingLeadingBidder");
         }
         this.autoBidItems.add(item);
         return item.tryAutoBidFor(this);
@@ -148,15 +145,15 @@ public class User {
         return bid;
     }
 
-    public Optional<Bid> tryToOutbidOn(Item item, Optional<User> currentLeadingBidder) {
+    public Collection<Bid> tryToOutbidOn(Item item, Optional<User> currentLeadingBidder) {
         if (!this.autoBidItems.contains(item)) {
-            return Optional.empty();
+            return Collections.emptyList();
         }
         final var newBidderAvailableCash = computeAvailableCashFor(item);
         if (item.isCurrentBidBiggerThan(newBidderAvailableCash)) {
-            return Optional.empty();
+            return Collections.emptyList();
         }
-        Bid result;
+        List<Bid> result = new ArrayList<>(2);
         if (!currentLeadingBidder.map(candidate -> candidate.isAutoBiddingOn(item)).orElse(false)) {
             final var newBid = currentLeadingBidder.flatMap(
                     candidate -> candidate.leadingBids
@@ -166,7 +163,7 @@ public class User {
             )
                     .map(bid -> bid.incrementFor(this))
                     .orElse(new Bid(item, this, LocalDateTime.now(), new Money(1, "USD")));
-            result = registerBid(newBid, item, currentLeadingBidder);
+            result.add(registerBid(newBid, item, currentLeadingBidder));
         } else {
             final var currentLeadingBidderInstance = currentLeadingBidder.get();
             final var currentLeadingBidderAvailableCash = currentLeadingBidderInstance.computeAvailableCashFor(item);
@@ -181,10 +178,11 @@ public class User {
                 winner = currentLeadingBidderInstance;
                 looser = this;
                 amount = newBidderAvailableCash;
+                result.add(registerNewBid(item, newBidderAvailableCash, Optional.of(winner)));
             }
-            result = winner.registerNewBid(item, amount.nextAmount(), Optional.of(looser));
+            result.add(winner.registerNewBid(item, amount.nextAmount(), Optional.of(looser)));
         }
-        return Optional.of(result);
+        return result;
     }
 
     private boolean isAutoBiddingOn(Item item) {

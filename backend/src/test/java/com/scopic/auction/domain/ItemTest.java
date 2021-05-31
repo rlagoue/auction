@@ -108,7 +108,7 @@ class ItemTest {
         ).thenReturn(bid);
         when(
                 leadingBidder.tryToOutbidOn(objectToTest, Optional.of(leadingBidder))
-        ).thenReturn(Optional.empty());
+        ).thenReturn(Collections.emptyList());
 
         final Collection<Bid> result = objectToTest.makeManualBid(newBidder, amount);
 
@@ -123,7 +123,7 @@ class ItemTest {
     }
 
     @Test
-    void makeManualBidFailureTest() {
+    void makeManualBidWithOutBidByTheAutoBidTest() {
         User newBidder = mock(User.class);
         Money amount = new Money(10d, "USD");
         Set<Bid> bids = getFieldValue(objectToTest, "bids");
@@ -138,7 +138,7 @@ class ItemTest {
         final var bid2 = mock(Bid.class);
         when(
                 leadingBidder.tryToOutbidOn(objectToTest, Optional.of(newBidder))
-        ).thenReturn(Optional.of(bid2));
+        ).thenReturn(List.of(bid2));
 
         final Collection<Bid> result = objectToTest.makeManualBid(newBidder, amount);
 
@@ -221,7 +221,7 @@ class ItemTest {
         final var size = bids.size();
 
         final var newBid = mock(Bid.class);
-        Optional<Bid> anyResponse = Optional.of(newBid);
+        List<Bid> anyResponse = List.of(newBid);
         final var newBidder = mock(User.class);
         when(newBidder.tryToOutbidOn(objectToTest, Optional.of(leadingBidder))).thenReturn(anyResponse);
 
@@ -243,7 +243,7 @@ class ItemTest {
         final var size = bids.size();
 
         final var newBidder = mock(User.class);
-        when(newBidder.tryToOutbidOn(objectToTest, Optional.of(leadingBidder))).thenReturn(Optional.empty());
+        when(newBidder.tryToOutbidOn(objectToTest, Optional.of(leadingBidder))).thenReturn(Collections.emptyList());
 
         final var potentialNewBid = objectToTest.tryAutoBidFor(newBidder);
 
