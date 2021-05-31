@@ -51,13 +51,20 @@ import {Bid} from "../../domain/Bid";
 import {Currency} from "../../domain/Currency";
 import {Money} from "../../domain/Money";
 
+type State = {
+  name: string,
+  description: string,
+  startBid: number,
+  errors: string[],
+}
+
 export default defineComponent({
   name: "Add",
   setup() {
     const store = useStore();
     const router = useRouter();
 
-    const state = reactive({
+    const state = reactive<State>({
       name: "",
       description: "",
       startBid: 0,
@@ -76,8 +83,8 @@ export default defineComponent({
       if (!state.description) {
         state.errors.push("Description is required");
       }
-      if (!state.startBid < 0) {
-        state.errors.push("Start bid must be postive");
+      if ((state.startBid + "").startsWith("-")) {
+        state.errors.push("Start bid must be positive");
       }
       if (state.errors.length === 0) {
         const newItemId = await store.addItem(

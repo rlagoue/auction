@@ -5,14 +5,22 @@ services:
     ports:
     - "80:80"
     depends_on:
-      - auction-service
-  auction-service:
+      - backend
+  backend:
     build: ./backend
+    environment:
+      - DATASOURCE_HOST=db
+      - DATASOURCE_PORT=5432
+      - DATASOURCE_DB=auctiondb
+      - DATASOURCE_USERNAME=auction
+      - DATASOURCE_PASSWORD=auction
     depends_on:
       - db
   db:
     image: postgres:9.6
     environment:
-      - POSTGRES_DB=auction
+      - POSTGRES_DB=auctiondb
       - POSTGRES_USER=auction
       - POSTGRES_PASSWORD=auction
+    ports:
+    - "5432:5432"

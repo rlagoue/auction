@@ -113,7 +113,7 @@
         <tbody>
         <tr
             v-for="bid in state.item.bids"
-            :key="bid"
+            :key="bid.id"
             :data-test-id="bid.user.username"
             class="my-10 py-10"
         >
@@ -207,6 +207,7 @@ export default {
       if (result === "success") {
         state.item.bids.push(
             new Bid(
+                "",
                 store.currentUser,
                 localDateToUtc(new Date()),
                 new Money(newBid.value, Currency.USD)
