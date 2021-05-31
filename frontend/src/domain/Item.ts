@@ -42,12 +42,18 @@ export class Item {
     }
 
     getCurrentBid(): Money {
+        if (this.bids.length === 0) {
+            return Money.Null;
+        }
         return [...this.bids].sort(
             (a, b) => b.amount.value - a.amount.value
         )[0].amount;
     }
 
     getStartBid(): Money {
+        if (this.bids.length === 0) {
+            return Money.Null;
+        }
         return [...this.bids].sort(
             (a, b) => a.amount.value - b.amount.value
         )[0].amount;

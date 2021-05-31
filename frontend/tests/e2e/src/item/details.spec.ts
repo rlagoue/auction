@@ -58,38 +58,7 @@ describe("Item Details as Admin", () => {
                                 id: "itemId2",
                                 name: "item-name_2",
                                 description: "item-description_2",
-                                bids: [
-                                    {
-                                        user: {
-                                            username: "admin"
-                                        },
-                                        time: "2021-05-10T10:11:00",
-                                        amount: {
-                                            value: 2,
-                                            currency: "USD"
-                                        },
-                                    },
-                                    {
-                                        user: {
-                                            username: "user1",
-                                        },
-                                        time: "2021-05-19T10:11:00",
-                                        amount: {
-                                            value: 10,
-                                            currency: "USD"
-                                        },
-                                    },
-                                    {
-                                        user: {
-                                            username: "user2",
-                                        },
-                                        time: "2021-05-20T10:11:00",
-                                        amount: {
-                                            value: 12,
-                                            currency: "USD"
-                                        },
-                                    }
-                                ],
+                                bids: [],
                             },
                         ]
                 })

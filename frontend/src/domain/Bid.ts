@@ -2,6 +2,7 @@ import {Money} from "./Money";
 import {User} from "./User";
 
 export class Bid {
+    static Null = new Bid(new User(""), "", Money.Null);
     user: User;
     time: string;
     amount: Money;

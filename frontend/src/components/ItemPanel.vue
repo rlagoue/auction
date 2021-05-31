@@ -14,18 +14,19 @@
       {{item.name}}
     </div>
     <div class="text-xl font-bold">
-      {{ item.getCurrentBid().toString() }}
+      {{ currentBidAsString }}
     </div>
     <div class="text-sm">
-      {{ item.getStartBid().toString() }}
+      {{ startBidAsString }}
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import {defineComponent, PropType} from "vue";
+import {computed, defineComponent, PropType} from "vue";
 import {Item} from "../domain/Item";
 import {useRouter} from "vue-router";
+import {Money} from "../domain/Money";
 
 export default defineComponent({
   name: "ItemPanel",
@@ -40,8 +41,24 @@ export default defineComponent({
     const showDetails = () => {
       router.push("/item-details/" + props.item.id)
     }
+
+    const startBidAsString = computed<string>(() =>
+        computeBidString(props.item.getStartBid()));
+
+    const currentBidAsString = computed<string>(() =>
+        computeBidString(props.item.getCurrentBid()));
+
+    const computeBidString = (bid: Money) => {
+      if (bid === Money.Null) {
+        return "N/A";
+      }
+      return bid.toString();
+    }
+
     return {
       showDetails,
+      startBidAsString,
+      currentBidAsString,
     }
   },
 });
