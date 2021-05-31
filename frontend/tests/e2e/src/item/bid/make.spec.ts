@@ -27,10 +27,7 @@ const makeBid = (bid: number): any => {
     cy.get("[data-test-id='make-bid-input']").should("have.value", "13");
     cy.get("[data-test-id='make-bid-input']").clear().type("" + bid);
     cy.get("[data-test-id='make-bid-submit']").click();
-    cy.wait("@item-bid").should(({request}) => {
-        expect(request.body.user.username).to.equal("user3");
-        expect(request.body.bid).to.equal(bid + "");
-    });
+    cy.wait("@item-bid");
 }
 
 describe("Make a bid", () => {
@@ -172,7 +169,7 @@ describe("Make a bid", () => {
         cy.intercept(
             {
                 method: "POST",
-                url: "**/item/itemBidId1/bid",
+                url: "**/item/itemBidId1/bid/14",
             },
             {
                 statusCode: 200,
@@ -196,7 +193,7 @@ describe("Make a bid", () => {
         cy.intercept(
             {
                 method: "POST",
-                url: "**/item/itemBidId1/bid",
+                url: "**/item/itemBidId1/bid/14",
             },
             {
                 statusCode: 200,

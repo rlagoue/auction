@@ -12,7 +12,7 @@ public class RequestHeaderInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
-        String user = request.getHeader("User-Agent");
+        String user = request.getHeader("Authorization");
         ThreadLocalStorage.set(new ThreadLocalStorage(user));
         return true;
     }

@@ -6,7 +6,7 @@ import {Settings} from "../domain/Settings";
 const axiosInstance = axios.create({
     baseURL: <string>import.meta.env.VITE_REST_API_BASE_URL,
     headers: {
-        "User-Agent": localStorage.getItem("username")
+        "Authorization": localStorage.getItem("username")
     }
 })
 
@@ -70,11 +70,7 @@ const makeBid = async (
     bid: number
 ): Promise<string> => {
     const response = await axiosInstance.post<string>(
-        "/item/" + itemId + "/bid",
-        {
-            user,
-            bid,
-        }
+        "/item/" + itemId + "/bid/" + bid
     );
     return response.data;
 }

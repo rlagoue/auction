@@ -36,7 +36,7 @@ public class BaseIntegrationTest {
 
     protected void setupHeaders(String username) {
         testRestTemplate.getRestTemplate().getInterceptors().add((request, body, execution) -> {
-            request.getHeaders().set(HttpHeaders.USER_AGENT, username);//Set the header for each request
+            request.getHeaders().set(HttpHeaders.AUTHORIZATION, username);//Set the header for each request
             return execution.execute(request, body);
         });
     }
