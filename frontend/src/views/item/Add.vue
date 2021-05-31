@@ -25,14 +25,24 @@
         required
         @keypress.enter="trySubmit"
     />
-    <button
-        class="mt-4 p-2 border-2 rounder-md bg-green-200 font-bold uppercase"
-        data-test-id="item-add-submit"
-        type="button"
-        @click="trySubmit"
-    >
-      Submit
-    </button>
+    <div class="flex items-center justify-center-center space-x-2">
+      <button
+          class="mt-4 p-2 border-2 rounder-md bg-green-200 font-bold uppercase"
+          data-test-id="item-add-submit"
+          type="button"
+          @click="trySubmit"
+      >
+        Submit
+      </button>
+      <button
+          class="mt-4 p-2 border-2 rounder-md bg-white font-bold uppercase text-red-700"
+          data-test-id="item-add-cancel"
+          type="button"
+          @click="cancel"
+      >
+        Cancel
+      </button>
+    </div>
   </div>
 </template>
 
@@ -80,9 +90,12 @@ export default defineComponent({
       }
     };
 
+    const cancel = async () => router.push("/items-list");
+
     return {
       state,
-      trySubmit
+      trySubmit,
+      cancel,
     }
   }
 })
