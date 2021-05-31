@@ -19,6 +19,8 @@ public class AuctionService {
             return this.userService.makeManualBid(itemId, bid, bidderId);
         } catch (ObjectOptimisticLockingFailureException e) {
             return "original-state-changed";
+        } catch (Throwable e) {
+            return e.getMessage();
         }
     }
 

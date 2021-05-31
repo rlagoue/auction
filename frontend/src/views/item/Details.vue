@@ -219,6 +219,12 @@ export default {
       } else if (result === "original-state-changed") {
         displayOriginalStateChangedMessage();
         await fetchData();
+      } else if (result === "CannotBidManuallyOnItemWithAutoBidActivated") {
+        state.biddingFeedbackMessage = "Please Deactivate the Auto Bid for this item, Then you will be able to bid manually again";
+        await fetchData();
+      } else if (result === "CannotActivateAutoBidWhenBeingLeadingBidder") {
+        state.biddingFeedbackMessage = "As long you are the highest bidder on this item, you are not able to activate autobid on it.";
+        await fetchData();
       }
 
     };
