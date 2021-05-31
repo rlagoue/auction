@@ -26,13 +26,13 @@ class AuctionServiceTest extends BaseResourcesTest {
     }
 
     @Test
-    void makeABidTest() {
+    void makeManualBidTest() {
         final String itemId = UUID.randomUUID().toString();
         String expected = "expected";
         final var bid = 10d;
-        Mockito.when(userService.makeABid(itemId, bid, CURRENT_USER)).thenReturn(expected);
+        Mockito.when(userService.makeManualBid(itemId, bid, CURRENT_USER)).thenReturn(expected);
 
-        final String response = objectToTest.makeABid(
+        final String response = objectToTest.makeManualBid(
                 itemId,
                 bid,
                 CURRENT_USER
@@ -41,10 +41,10 @@ class AuctionServiceTest extends BaseResourcesTest {
     }
 
     @Test
-    void makeABidWithOriginalStateChangedTest() {
+    void makeManualBidWithOriginalStateChangedTest() {
         final String itemId = UUID.randomUUID().toString();
         final var bid = 10d;
-        Mockito.when(userService.makeABid(itemId, bid, CURRENT_USER))
+        Mockito.when(userService.makeManualBid(itemId, bid, CURRENT_USER))
                 .thenThrow(
                         new ObjectOptimisticLockingFailureException(
                                 "",
@@ -52,7 +52,7 @@ class AuctionServiceTest extends BaseResourcesTest {
                         )
                 );
 
-        final String response = objectToTest.makeABid(
+        final String response = objectToTest.makeManualBid(
                 itemId,
                 bid,
                 CURRENT_USER

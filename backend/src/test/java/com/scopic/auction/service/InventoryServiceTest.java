@@ -20,6 +20,8 @@ import org.springframework.data.domain.Sort;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class InventoryServiceTest {
@@ -40,12 +42,12 @@ class InventoryServiceTest {
         final int pageIndex = 1;
         List<Item> items = new ArrayList<>();
         for (int i = 1; i <= 10; i++) {
-            final Item item = Mockito.mock(Item.class);
-            Mockito.when(item.toDto()).thenReturn(Mockito.mock(ItemDto.class));
+            final Item item = mock(Item.class);
+            when(item.toDto()).thenReturn(mock(ItemDto.class));
             items.add(item);
         }
 
-        PageRequest pageable = Mockito.mock(PageRequest.class);
+        PageRequest pageable = mock(PageRequest.class);
 
         try (final MockedStatic<PageRequest> mockedStaticPageRequest = Mockito.mockStatic(
                 PageRequest.class
@@ -53,22 +55,22 @@ class InventoryServiceTest {
             mockedStaticPageRequest.when(() -> PageRequest.of(
                     pageIndex,
                     10,
-                    Sort.by(Sort.Direction.DESC, "time")
+                    Sort.by(Sort.Direction.DESC, "name")
             )).thenReturn(pageable);
 
 
-            final Page<Item> page = Mockito.mock(Page.class);
+            final Page<Item> page = mock(Page.class);
             final long totalCount = 100L;
-            Mockito.when(page.getTotalElements()).thenReturn(totalCount);
-            Mockito.when(page.getContent()).thenReturn(items);
+            when(page.getTotalElements()).thenReturn(totalCount);
+            when(page.getContent()).thenReturn(items);
 
-            Mockito.when(itemRepository.findAll(pageable)).thenReturn(page);
+            when(itemRepository.findAll(pageable)).thenReturn(page);
 
-            final User settings = Mockito.mock(User.class);
+            final User settings = mock(User.class);
             final String username = "user1";
-            ThreadLocalStorage.set(new ThreadLocalStorage(username));
-            Mockito.when(userService.getById(username)).thenReturn(settings);
-            Mockito.when(settings.isAutoBidActiveFor(Mockito.any(Item.class))).thenReturn(true);
+
+            when(userService.getById(username)).thenReturn(settings);
+            when(settings.isAutoBidActiveFor(Mockito.any(Item.class))).thenReturn(true);
 
             final ItemFetchDto itemFetchDto = objectToTest.getItems(username, pageIndex);
 
@@ -85,16 +87,16 @@ class InventoryServiceTest {
         final UUID itemId = UUID.randomUUID();
         final String itemIdAsString = itemId.toString();
 
-        final User user = Mockito.mock(User.class);
+        final User user = mock(User.class);
         final String username = "user1";
         ThreadLocalStorage.set(new ThreadLocalStorage(username));
-        Mockito.when(userService.getById(username)).thenReturn(user);
-        Mockito.when(user.isAutoBidActiveFor(Mockito.any(Item.class))).thenReturn(true);
+        when(userService.getById(username)).thenReturn(user);
+        when(user.isAutoBidActiveFor(Mockito.any(Item.class))).thenReturn(true);
 
-        Item item = Mockito.mock(Item.class);
-        Mockito.when(itemRepository.findById(itemId)).thenReturn(Optional.of(item));
-        ItemDto expectedItemDto = Mockito.mock(ItemDto.class);
-        Mockito.when(item.toDto()).thenReturn(expectedItemDto);
+        Item item = mock(Item.class);
+        when(itemRepository.findById(itemId)).thenReturn(Optional.of(item));
+        ItemDto expectedItemDto = mock(ItemDto.class);
+        when(item.toDto()).thenReturn(expectedItemDto);
 
         final ItemDto itemDto = objectToTest.getItemById(username, itemIdAsString);
 
@@ -117,7 +119,7 @@ class InventoryServiceTest {
                 (mock, context) -> {
                     assertEquals(name, context.arguments().get(0));
                     assertEquals(description, context.arguments().get(1));
-                    Mockito.when(mock.getId()).thenReturn(expectedItemId);
+                    when(mock.getId()).thenReturn(expectedItemId);
                 }
         )
         ) {

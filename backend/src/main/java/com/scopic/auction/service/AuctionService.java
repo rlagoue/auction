@@ -14,9 +14,9 @@ public class AuctionService {
         this.userService = userService;
     }
 
-    public String makeABid(String itemId, Number bid, String bidderId) {
+    public String makeManualBid(String itemId, Number bid, String bidderId) {
         try {
-            return this.userService.makeABid(itemId, bid, bidderId);
+            return this.userService.makeManualBid(itemId, bid, bidderId);
         } catch (ObjectOptimisticLockingFailureException e) {
             return "original-state-changed";
         }

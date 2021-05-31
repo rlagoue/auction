@@ -41,7 +41,7 @@ public class Bid extends BaseDomainObject {
         return bids.stream()
                 .map(bid -> bid.amount)
                 .reduce(
-                        new Money(0, "USD"),
+                        Money.ZERO_USD,
                         (a, b) -> a.add(b)
                 );
     }

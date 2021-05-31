@@ -8,6 +8,8 @@ import java.util.Currency;
 import java.util.Objects;
 
 public class Money {
+    public static final Money ZERO_USD = new Money(0, "USD");
+
     private final Currency currency;
     private final int defaultFractionDigits;
     private long value;

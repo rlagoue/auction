@@ -1,27 +1,29 @@
 package com.scopic.auction.service;
 
-import com.scopic.auction.domain.InvalidNewMaxBidAmountException;
-import com.scopic.auction.domain.Item;
-import com.scopic.auction.domain.Money;
-import com.scopic.auction.domain.User;
+import com.scopic.auction.domain.*;
 import com.scopic.auction.dto.SettingsDto;
+import com.scopic.auction.repository.BidRepository;
 import com.scopic.auction.repository.ItemRepository;
 import com.scopic.auction.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collection;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
 public class UserService {
     private final UserRepository userRepository;
     private final ItemRepository itemRepository;
+    private final BidRepository bidRepository;
 
     @Autowired
-    public UserService(UserRepository userRepository, ItemRepository itemRepository) {
+    public UserService(UserRepository userRepository, ItemRepository itemRepository, BidRepository bidRepository) {
         this.userRepository = userRepository;
         this.itemRepository = itemRepository;
+        this.bidRepository = bidRepository;
     }
 
     User getById(String id) {
@@ -54,8 +56,9 @@ public class UserService {
         final User user = getById(username);
         final Item item = itemRepository.findById(UUID.fromString(itemId))
                 .orElseThrow();
-        user.activateAutoBidOn(item);
-        userRepository.saveAndFlush(user);
+        user.activateAutoBidOn(item).ifPresent(bid -> bidRepository.save(bid));
+        itemRepository.save(item);
+        userRepository.save(user);
     }
 
     @Transactional
@@ -68,12 +71,15 @@ public class UserService {
     }
 
     @Transactional
-    public String makeABid(String itemId, Number bid, String bidderId) {
+    public String makeManualBid(String itemId, Number bid, String bidderId) {
         final Item item = itemRepository.findById(UUID.fromString(itemId)).orElseThrow();
         User user = getById(bidderId);
         Money amount = new Money(bid, "USD");
-        final var result = item.makeABid(user, amount);
-        itemRepository.saveAndFlush(item);
-        return result;
+        final var result = item.makeManualBid(user, amount);
+        if (!result.isEmpty()) {
+            bidRepository.saveAll(result);
+        }
+        itemRepository.save(item);
+        return result.size() == 1 ? "success" : "outbidded";
     }
 }

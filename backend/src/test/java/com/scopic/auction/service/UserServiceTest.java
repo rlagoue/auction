@@ -1,11 +1,9 @@
 package com.scopic.auction.service;
 
-import com.scopic.auction.domain.InvalidNewMaxBidAmountException;
-import com.scopic.auction.domain.Item;
-import com.scopic.auction.domain.Money;
-import com.scopic.auction.domain.User;
+import com.scopic.auction.domain.*;
 import com.scopic.auction.dto.MoneyDto;
 import com.scopic.auction.dto.SettingsDto;
+import com.scopic.auction.repository.BidRepository;
 import com.scopic.auction.repository.ItemRepository;
 import com.scopic.auction.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,10 +13,13 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
@@ -28,10 +29,12 @@ class UserServiceTest {
     private UserRepository userRepository;
     @Mock
     private ItemRepository itemRepository;
+    @Mock
+    private BidRepository bidRepository;
 
     @BeforeEach
     void setUp() {
-        objectToTest = new UserService(userRepository, itemRepository);
+        objectToTest = new UserService(userRepository, itemRepository, bidRepository);
     }
 
     @Test
@@ -40,11 +43,11 @@ class UserServiceTest {
 
         final var spiedObjectToTest = Mockito.spy(objectToTest);
 
-        User user = Mockito.mock(User.class);
+        User user = mock(User.class);
         Mockito.doReturn(user).when(spiedObjectToTest).getById(username);
 
-        SettingsDto expected = Mockito.mock(SettingsDto.class);
-        Mockito.when(user.getSettings()).thenReturn(expected);
+        SettingsDto expected = mock(SettingsDto.class);
+        when(user.getSettings()).thenReturn(expected);
 
         final SettingsDto settingsDto = spiedObjectToTest.getSettings(username);
 
@@ -59,15 +62,15 @@ class UserServiceTest {
         data.maxBidAmount = new MoneyDto();
         data.maxBidAmount.value = value;
         data.maxBidAmount.currency = "USD";
-        User user = Mockito.mock(User.class);
+        User user = mock(User.class);
 
         final UserService spiedObjectToTest = Mockito.spy(objectToTest);
         Mockito.doReturn(user).when(spiedObjectToTest).getById(username);
 
         spiedObjectToTest.updateSettings(username, data);
 
-        Mockito.verify(user).update(new Money(value, "USD"));
-        Mockito.verify(userRepository).saveAndFlush(user);
+        verify(user).update(new Money(value, "USD"));
+        verify(userRepository).saveAndFlush(user);
     }
 
     @Test
@@ -78,40 +81,87 @@ class UserServiceTest {
         data.maxBidAmount = new MoneyDto();
         data.maxBidAmount.value = value;
         data.maxBidAmount.currency = "USD";
-        Mockito.when(userRepository.findById(username))
+        when(userRepository.findById(username))
                 .thenReturn(Optional.empty());
-        Mockito.when(userRepository.existsById(username)).thenReturn(false);
+        when(userRepository.existsById(username)).thenReturn(false);
 
         final User user = objectToTest.getById(username);
 
         assertNotNull(user);
 
-        Mockito.verify(userRepository).saveAndFlush(user);
+        verify(userRepository).saveAndFlush(user);
     }
 
     @Test
-    void makeABidSuccessfullyTest() {
+    void makeManualBidSuccessfullyTest() {
         final String username = "user1";
         final long newBidValue = 100L;
         final UUID itemId = UUID.randomUUID();
         final String itemIdAsString = itemId.toString();
 
+        Item item = mock(Item.class);
+        when(itemRepository.findById(itemId)).thenReturn(Optional.of(item));
+        final var bid = mock(Bid.class);
+        when(
+                item.makeManualBid(any(User.class), any(Money.class))
+        ).thenReturn(List.of(bid));
 
-        Item item = Mockito.mock(Item.class);
-        Mockito.when(itemRepository.findById(itemId)).thenReturn(Optional.of(item));
-        final String success = "success";
-        Mockito.when(
-                item.makeABid(Mockito.any(User.class), Mockito.any(Money.class))
-        ).thenReturn(success);
-
-        final String result = objectToTest.makeABid(itemIdAsString, newBidValue, username);
-
-        assertEquals(success, result);
-        Mockito.verify(item).makeABid(
+        final String result = objectToTest.makeManualBid(itemIdAsString, newBidValue, username);
+        assertEquals("success", result);
+        verify(item).makeManualBid(
                 new User(username),
                 new Money(newBidValue, "USD")
         );
-        Mockito.verify(itemRepository).saveAndFlush(item);
+        verify(bidRepository).saveAll(List.of(bid));
+        verify(itemRepository).save(item);
+    }
+
+    @Test
+    void makeManualBidWithSmallerAmountTest() {
+        final String username = "user1";
+        final long newBidValue = 100L;
+        final UUID itemId = UUID.randomUUID();
+        final String itemIdAsString = itemId.toString();
+
+        Item item = mock(Item.class);
+        when(itemRepository.findById(itemId)).thenReturn(Optional.of(item));
+        when(
+                item.makeManualBid(any(User.class), any(Money.class))
+        ).thenReturn(List.of());
+
+        final String result = objectToTest.makeManualBid(itemIdAsString, newBidValue, username);
+        assertEquals("outbidded", result);
+        verify(item).makeManualBid(
+                new User(username),
+                new Money(newBidValue, "USD")
+        );
+        verify(bidRepository, never()).saveAll(any());
+        verify(itemRepository).save(item);
+    }
+
+    @Test
+    void makeManualBidChallengingBiggerBidderTest() {
+        final String username = "user1";
+        final long newBidValue = 100L;
+        final UUID itemId = UUID.randomUUID();
+        final String itemIdAsString = itemId.toString();
+
+        Item item = mock(Item.class);
+        when(itemRepository.findById(itemId)).thenReturn(Optional.of(item));
+        final var bid1 = mock(Bid.class);
+        final var bid2 = mock(Bid.class);
+        when(
+                item.makeManualBid(any(User.class), any(Money.class))
+        ).thenReturn(List.of(bid1, bid2));
+
+        final String result = objectToTest.makeManualBid(itemIdAsString, newBidValue, username);
+        assertEquals("outbidded", result);
+        verify(item).makeManualBid(
+                new User(username),
+                new Money(newBidValue, "USD")
+        );
+        verify(bidRepository).saveAll(List.of(bid1, bid2));
+        verify(itemRepository).save(item);
     }
 
     @Test
@@ -119,10 +169,10 @@ class UserServiceTest {
         final UUID itemId = UUID.randomUUID();
         final String itemIdAsString = itemId.toString();
         final String username = "username";
-        final Item item = Mockito.mock(Item.class);
-        User user = Mockito.mock(User.class);
+        final Item item = mock(Item.class);
+        User user = mock(User.class);
 
-        Mockito.when(itemRepository.findById(itemId))
+        when(itemRepository.findById(itemId))
                 .thenReturn(Optional.of(item));
 
         final UserService spiedObjectToTest = Mockito.spy(objectToTest);
@@ -130,8 +180,9 @@ class UserServiceTest {
 
         spiedObjectToTest.activateAutoBidOnItem(username, itemIdAsString);
 
-        Mockito.verify(user).activateAutoBidOn(item);
-        Mockito.verify(userRepository).saveAndFlush(user);
+        verify(user).activateAutoBidOn(item);
+        verify(itemRepository).save(item);
+        verify(userRepository).save(user);
     }
 
     @Test
@@ -139,10 +190,10 @@ class UserServiceTest {
         final UUID itemId = UUID.randomUUID();
         final String itemIdAsString = itemId.toString();
         final String username = "username";
-        final Item item = Mockito.mock(Item.class);
-        User user = Mockito.mock(User.class);
+        final Item item = mock(Item.class);
+        User user = mock(User.class);
 
-        Mockito.when(itemRepository.findById(itemId))
+        when(itemRepository.findById(itemId))
                 .thenReturn(Optional.of(item));
 
         final UserService spiedObjectToTest = Mockito.spy(objectToTest);
@@ -150,7 +201,7 @@ class UserServiceTest {
 
         spiedObjectToTest.deactivateAutoBidOnItem(username, itemIdAsString);
 
-        Mockito.verify(user).deactivateAutoBidOn(item);
-        Mockito.verify(userRepository).saveAndFlush(user);
+        verify(user).deactivateAutoBidOn(item);
+        verify(userRepository).saveAndFlush(user);
     }
 }

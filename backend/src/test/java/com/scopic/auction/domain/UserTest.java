@@ -96,8 +96,8 @@ class UserTest {
         }
 
         assertEquals(newAmount, getFieldValue(objectToTest, "maxBidAmount"));
-        Mockito.verify(item2).makeNextPossibleBid(objectToTest);
-        Mockito.verify(item3).makeNextPossibleBid(objectToTest);
+        Mockito.verify(item2).tryAutoBidFor(objectToTest);
+        Mockito.verify(item3).tryAutoBidFor(objectToTest);
     }
 
     @Test
@@ -155,6 +155,8 @@ class UserTest {
 
         Set<Bid> leadingBids = getFieldValue(objectToTest, "leadingBids");
         assertEquals(1, leadingBids.size());
+
+        Mockito.verify(item).tryAutoBidFor(objectToTest);
     }
 
     @Test
@@ -187,7 +189,7 @@ class UserTest {
             bidMockedStatic.when(() -> Bid.sum(newBidderLeadingBids))
                     .thenReturn(newBidderLeadingBidsSum);
 
-            final var outbid = objectToTest.tryToOutbidOn(item, currentLeadingBidder);
+            final var outbid = objectToTest.tryToOutbidOn(item, Optional.of(currentLeadingBidder));
             assertTrue(outbid.isEmpty());
         }
     }
@@ -199,7 +201,7 @@ class UserTest {
         var currentLeadingBidder = new User("currentLeadingBidder");
         setFieldValue(currentLeadingBidder, "autoBidItems", Set.of(item));
 
-        final var outbid = objectToTest.tryToOutbidOn(item, currentLeadingBidder);
+        final var outbid = objectToTest.tryToOutbidOn(item, Optional.of(currentLeadingBidder));
         assertTrue(outbid.isEmpty());
     }
 
@@ -261,7 +263,7 @@ class UserTest {
             bidMockedStatic.when(() -> Bid.sum(newLeadingBidderLeadingBids))
                     .thenReturn(newBidderLeadingBidsSum);
 
-            final var outbid = objectToTest.tryToOutbidOn(item, currentLeadingBidder);
+            final var outbid = objectToTest.tryToOutbidOn(item, Optional.of(currentLeadingBidder));
             assertFalse(outbid.isEmpty());
             final var bid = outbid.get();
             assertEquals(item, getFieldValue(bid, "item"));
@@ -336,7 +338,7 @@ class UserTest {
             bidMockedStatic.when(() -> Bid.sum(newLeadingBidderLeadingBids))
                     .thenReturn(newBidderLeadingBidsSum);
 
-            final var outbid = objectToTest.tryToOutbidOn(item, currentLeadingBidder);
+            final var outbid = objectToTest.tryToOutbidOn(item, Optional.of(currentLeadingBidder));
             assertFalse(outbid.isEmpty());
             final var bid = outbid.get();
             assertEquals(item, getFieldValue(bid, "item"));
@@ -411,7 +413,7 @@ class UserTest {
             bidMockedStatic.when(() -> Bid.newestOf(currentLeadingBidderLeadingBids))
                     .thenReturn(Optional.of(bid2));
 
-            final var outbid = objectToTest.tryToOutbidOn(item, currentLeadingBidder);
+            final var outbid = objectToTest.tryToOutbidOn(item, Optional.of(currentLeadingBidder));
             assertFalse(outbid.isEmpty());
             final var bid = outbid.get();
             assertSame(newBid, bid);

@@ -1,4 +1,4 @@
-package com.scopic.auction.e2e;
+package com.scopic.auction.integration;
 
 import com.scopic.auction.dto.ItemDto;
 import com.scopic.auction.dto.ItemFetchDto;
@@ -6,34 +6,24 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-class InventoryTest {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(InventoryTest.class);
-    @Autowired
-    private TestRestTemplate testRestTemplate;
+class InventoryIntegrationTest extends BaseIntegrationTest {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(InventoryIntegrationTest.class);
 
     @BeforeEach
     public void createHeaders() {
-        testRestTemplate.getRestTemplate().getInterceptors().add((request, body, execution) -> {
-            request.getHeaders().set(HttpHeaders.USER_AGENT, "admin");//Set the header for each request
-            return execution.execute(request, body);
-        });
-
+        setupHeaders("admin");
     }
 
     @Test
@@ -42,7 +32,7 @@ class InventoryTest {
         final var description1 = "mug from sultan Njoya";
         final var id1 = createItem(name1, description1);
 
-        final var item = testRestTemplate.getForEntity("/item/" + id1, ItemDto.class).getBody();
+        final ItemDto item = fetchItemById(id1);
         assertEquals(id1, Objects.requireNonNull(item).id);
         assertEquals(name1, item.name);
         assertEquals(description1, item.description);
@@ -84,17 +74,5 @@ class InventoryTest {
         );
     }
 
-    private String createItem(String name, String description) {
-        final var item = new ItemDto(null, name, description);
-        final var result = testRestTemplate.postForEntity(
-                "/item",
-                item,
-                String.class
-        );
-        final var body = result.getBody();
-        assertNotNull(body);
-        assertNotNull(UUID.fromString(body));
-        return body;
-    }
 
 }

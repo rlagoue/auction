@@ -15,6 +15,20 @@ import java.util.stream.Collectors;
 @Entity
 @Table(name = "t_user")
 public class User {
+    @ManyToMany
+    @JoinTable(
+            name = "t_autobiditems",
+            joinColumns = @JoinColumn(name = "c_user"),
+            inverseJoinColumns = @JoinColumn(name = "c_item")
+    )
+    private final Set<Item> autoBidItems = new HashSet<>();
+    @OneToMany
+    @JoinTable(
+            name = "t_leadingBids",
+            joinColumns = @JoinColumn(name = "c_user"),
+            inverseJoinColumns = @JoinColumn(name = "c_bid")
+    )
+    private final Set<Bid> leadingBids = new HashSet<>();
     @Id
     @Column(name = "c_username")
     private String username;
@@ -22,26 +36,12 @@ public class User {
     @Column(name = "c_maxbidamount")
     @Convert(converter = MoneyConverter.class)
     private Money maxBidAmount;
-    @ManyToMany
-    @JoinTable(
-            name = "t_autobiditems",
-            joinColumns = @JoinColumn(name = "c_user"),
-            inverseJoinColumns = @JoinColumn(name = "c_item")
-    )
-    private Set<Item> autoBidItems = new HashSet<>();
-    @OneToMany
-    @JoinTable(
-            name = "t_leadingBids",
-            joinColumns = @JoinColumn(name = "c_user"),
-            inverseJoinColumns = @JoinColumn(name = "c_bid")
-    )
-    private Set<Bid> leadingBids = new HashSet<>();
 
     public User() {
     }
 
     public User(String username) {
-        this(username, new Money(0, "USD"));
+        this(username, Money.ZERO_USD);
     }
 
     public User(String username, Money maxBidAmount) {
@@ -91,14 +91,15 @@ public class User {
                         item -> leadingBids.stream()
                                 .noneMatch(bid -> bid.isAbout(item))
                 )
-                .forEach(item -> item.makeNextPossibleBid(this));
+                .forEach(item -> item.tryAutoBidFor(this));
     }
 
-    public void activateAutoBidOn(Item item) {
+    public Optional<Bid> activateAutoBidOn(Item item) {
         if (this.autoBidItems.contains(item)) {
-            return;
+            return Optional.empty();
         }
         this.autoBidItems.add(item);
+        return item.tryAutoBidFor(this);
     }
 
     private Money computeAvailableCashFor(Item item) {
@@ -126,15 +127,18 @@ public class User {
         return this.autoBidItems.contains(item);
     }
 
-    public Bid makeABid(Item item, Money amount, Optional<User> currentBidder) {
-        return registerNewBid(
-                new Bid(item, this, LocalDateTime.now(), amount),
-                item,
-                currentBidder
-        );
+    public Bid makeManualBid(Item item, Money amount, Optional<User> currentBidder) {
+        if (this.autoBidItems.contains(item)) {
+            throw new UnsupportedOperationException("CannotBidManuallyOnItemWithAutoBidActivated");
+        }
+        return registerNewBid(item, amount, currentBidder);
     }
 
-    private Bid registerNewBid(Bid bid, Item item, Optional<User> currentBidder) {
+    private Bid registerNewBid(Item item, Money amount, Optional<User> currentBidder) {
+        return registerBid(new Bid(item, this, LocalDateTime.now(), amount), item, currentBidder);
+    }
+
+    private Bid registerBid(Bid bid, Item item, Optional<User> currentBidder) {
         this.leadingBids.add(bid);
         currentBidder.ifPresent(
                 bidder -> bidder.leadingBids.removeIf(
@@ -144,7 +148,7 @@ public class User {
         return bid;
     }
 
-    public Optional<Bid> tryToOutbidOn(Item item, User currentLeadingBidder) {
+    public Optional<Bid> tryToOutbidOn(Item item, Optional<User> currentLeadingBidder) {
         if (!this.autoBidItems.contains(item)) {
             return Optional.empty();
         }
@@ -153,33 +157,38 @@ public class User {
             return Optional.empty();
         }
         Bid result;
-        if (!currentLeadingBidder.autoBidItems.contains(item)) {
-            result = registerNewBid(
-                    Bid.newestOf(currentLeadingBidder.leadingBids).orElseThrow().incrementFor(this),
-                    item,
-                    Optional.ofNullable(currentLeadingBidder)
-            );
+        if (!currentLeadingBidder.map(candidate -> candidate.isAutoBiddingOn(item)).orElse(false)) {
+            final var newBid = currentLeadingBidder.flatMap(
+                    candidate -> candidate.leadingBids
+                            .stream()
+                            .filter(bid -> bid.isAbout(item))
+                            .findFirst()
+            )
+                    .map(bid -> bid.incrementFor(this))
+                    .orElse(new Bid(item, this, LocalDateTime.now(), new Money(1, "USD")));
+            result = registerBid(newBid, item, currentLeadingBidder);
         } else {
-            final var currentLeadingBidderAvailableCash = currentLeadingBidder.computeAvailableCashFor(item);
+            final var currentLeadingBidderInstance = currentLeadingBidder.get();
+            final var currentLeadingBidderAvailableCash = currentLeadingBidderInstance.computeAvailableCashFor(item);
             User winner;
             User looser;
             Money amount;
             if (newBidderAvailableCash.isBiggerThan(currentLeadingBidderAvailableCash)) {
                 winner = this;
-                looser = currentLeadingBidder;
+                looser = currentLeadingBidderInstance;
                 amount = currentLeadingBidderAvailableCash;
             } else {
-                winner = currentLeadingBidder;
+                winner = currentLeadingBidderInstance;
                 looser = this;
                 amount = newBidderAvailableCash;
             }
-            result = winner.makeABid(
-                    item,
-                    amount.nextAmount(),
-                    Optional.of(looser)
-            );
+            result = winner.registerNewBid(item, amount.nextAmount(), Optional.of(looser));
         }
         return Optional.of(result);
+    }
+
+    private boolean isAutoBiddingOn(Item item) {
+        return this.autoBidItems.contains(item);
     }
 
     public void deactivateAutoBidOn(Item item) {

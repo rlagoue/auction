@@ -31,13 +31,13 @@ class AuctionResourcesTest extends BaseResourcesTest {
     }
 
     @Test
-    void makeABidTest() {
+    void makeManualBidTest() {
         final String itemId = "itemId";
         var bid = 10d;
 
         final String expectedResponse = "success";
-        Mockito.when(auctionService.makeABid(itemId, bid, CURRENT_USER)).thenReturn(expectedResponse);
-        final String response = objectToTest.makeABid(itemId, bid);
+        Mockito.when(auctionService.makeManualBid(itemId, bid, CURRENT_USER)).thenReturn(expectedResponse);
+        final String response = objectToTest.makeManualBid(itemId, bid);
 
         assertEquals(expectedResponse, response);
     }

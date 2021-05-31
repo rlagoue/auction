@@ -1,23 +1,13 @@
-package com.scopic.auction.e2e;
+package com.scopic.auction.integration;
 
-import com.scopic.auction.dto.MoneyDto;
 import com.scopic.auction.dto.SettingsDto;
 import com.scopic.auction.dto.UserDto;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-class UserTest {
-
-    @Autowired
-    private TestRestTemplate testRestTemplate;
-
+class UserIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void authWithAllUsers() {
@@ -48,14 +38,7 @@ class UserTest {
     void crudSettingsTest() {
         assertCurrentMaxBidAmountIs(0);
 
-        final var newSettings = new SettingsDto();
-        newSettings.maxBidAmount = new MoneyDto(100, "USD");
-        final var response = testRestTemplate.exchange(
-                "/user/userCrudSettings/settings",
-                HttpMethod.PUT,
-                new HttpEntity<>(newSettings),
-                String.class
-        );
+        final ResponseEntity<String> response = setMaxBidAmount(100, "userCrudSettings");
         assertEquals("success", response.getBody());
 
         assertCurrentMaxBidAmountIs(100);

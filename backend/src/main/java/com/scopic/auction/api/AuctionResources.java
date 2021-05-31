@@ -22,11 +22,11 @@ public class AuctionResources extends BaseResources {
 
     @PostMapping("/item/{itemId}/bid/{bid}")
     @ResponseBody
-    public String makeABid(
+    public String makeManualBid(
             @PathVariable("itemId") String itemId,
             @PathVariable("bid") Number bid
     ) {
-        return auctionService.makeABid(itemId, bid, getCurrentUsername());
+        return auctionService.makeManualBid(itemId, bid, getCurrentUsername());
     }
 
     @GetMapping("/user/{username}/settings")

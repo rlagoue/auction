@@ -3,24 +3,21 @@ package com.scopic.auction.domain;
 import com.scopic.auction.dto.ItemDto;
 
 import javax.persistence.*;
-import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "t_item")
 public class Item extends BaseDomainObject {
+    @OneToMany(mappedBy = "item")
+    private final Set<Bid> bids = new HashSet<>();
     @Column(name = "c_name")
     private String name;
     @Column(name = "c_description")
     private String description;
-    @OneToMany(mappedBy = "item", cascade = CascadeType.ALL)
-    private Set<Bid> bids = new HashSet<>();
     @ManyToOne
     @JoinColumn(name = "c_currentbidder", referencedColumnName = "c_username")
-    private User currentBidder;
+    private User leadingBidder;
 
     public Item() {
     }
@@ -38,42 +35,42 @@ public class Item extends BaseDomainObject {
         return result;
     }
 
-    public void makeNextPossibleBid(User newBidder) {
-        if (getNewestBid()
-                .map(bid -> bid.incrementFor(newBidder))
-                .map(bid -> registerNewBid(bid, newBidder))
-                .isEmpty()
-        ) {
-            makeABid(newBidder, new Money(1, "USD"));
-        }
-    }
-
-    public String makeABid(User newBidder, Money amount) {
+    public Collection<Bid> makeManualBid(User newBidder, Money amount) {
         if (this.bids.stream().anyMatch(bid -> bid.isBiggerThan(amount))) {
-            return "outbidded";
+            return Collections.emptyList();
         }
-        Bid bid = newBidder.makeABid(
+        Bid bid = newBidder.makeManualBid(
                 this,
                 amount,
-                Optional.ofNullable(currentBidder)
+                Optional.ofNullable(leadingBidder)
         );
         return registerNewBid(bid, newBidder);
     }
 
-    String registerNewBid(Bid bid, User newBidder) {
-        this.bids.add(bid);
-        Optional<Bid> outbid = tryAutoBid(newBidder);
-        outbid.ifPresent(newBid -> this.bids.add(newBid));
-        return outbid.isEmpty() ? "success" : "outbidded";
+    Collection<Bid> registerNewBid(Bid bid, User newBidder) {
+        Collection<Bid> newBids = new ArrayList<>(2);
+        var previousLeadingBidder = this.leadingBidder;
+        addBid(bid, newBidder, newBids);
+        this.leadingBidder = newBidder;
+        if (previousLeadingBidder != null) {
+            final var outBid = previousLeadingBidder.tryToOutbidOn(this, Optional.of(newBidder));
+            outBid.ifPresent(newBid -> this.addBid(newBid, previousLeadingBidder, newBids));
+        }
+        return newBids;
     }
 
-    private Optional<Bid> tryAutoBid(User newBidder) {
-        if (this.currentBidder == null) {
-            this.currentBidder = newBidder;
-            return Optional.empty();
-        } else {
-            return this.currentBidder.tryToOutbidOn(this, newBidder);
-        }
+    private Bid addBid(Bid bid, User newLeadBidder, Collection<Bid> newBids) {
+        this.leadingBidder = newLeadBidder;
+        this.bids.add(bid);
+        newBids.add(bid);
+        return bid;
+    }
+
+    public Optional<Bid> tryAutoBidFor(User newBidder) {
+        return newBidder.tryToOutbidOn(
+                this,
+                Optional.ofNullable(this.leadingBidder)
+        ).map(bid -> addBid(bid, newBidder, new ArrayList<>()));
     }
 
     public boolean isCurrentBidBiggerThan(Money amount) {
