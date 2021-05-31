@@ -51,7 +51,7 @@ export default {
     onBeforeMount(async () => {
       store.setCurrentPage("Settings");
       const settings = await store.fetchSettings();
-      state.maxBidAmount = settings.maxBidAmount;
+      state.maxBidAmount = settings.maxBidAmount.value;
     });
 
     const trySubmit = async () => {
@@ -62,7 +62,10 @@ export default {
       if (state.errors.length === 0) {
         await store.saveSettings(
             {
-              maxBidAmount: state.maxBidAmount
+              maxBidAmount: {
+                value: state.maxBidAmount,
+                currency: "USD",
+              }
             }
         );
       }

@@ -90,9 +90,7 @@ const fetchSettings = async (user: User): Promise<Settings> => {
 const saveSettings = async (settings: Settings, user: User) => {
     const response = await axiosInstance.put(
         "/user/" + user.username + "/settings",
-        {
-            maxBidAmount: settings.maxBidAmount,
-        },
+        settings,
     );
     return response.data;
 }

@@ -1,3 +1,5 @@
+import {Money} from "./Money";
+
 export interface Settings {
-    maxBidAmount: number,
+    maxBidAmount: Money,
 }

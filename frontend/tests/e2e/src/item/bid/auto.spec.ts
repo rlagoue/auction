@@ -75,7 +75,10 @@ describe("Auto bid support", () => {
             req => {
                 req.reply(
                     {
-                        maxBidAmount: 0,
+                        maxBidAmount: {
+                            value: 0,
+                            currency: "USD"
+                        },
                     }
                 )
             }).as("settings-fetcher");
@@ -136,6 +139,7 @@ const setAutoBid = (previousMax: number, nextMax: number) => {
         .type("" + nextMax);
     cy.get("[data-test-id='settings-submit']").click();
     cy.wait("@save-settings").should(({request}) => {
-        expect(request.body.maxBidAmount).to.equal("" + nextMax);
+        expect(request.body.maxBidAmount.value).to.equal("" + nextMax);
+        expect(request.body.maxBidAmount.currency).to.equal("USD");
     });
 }
