@@ -5,10 +5,13 @@ import {Settings} from "../domain/Settings";
 
 const axiosInstance = axios.create({
     baseURL: <string>import.meta.env.VITE_REST_API_BASE_URL,
-    headers: {
-        "Authorization": localStorage.getItem("username")
-    }
 })
+
+const getRequestHeaders = () => {
+    return {
+        Authorization: localStorage.getItem("username")
+    }
+}
 
 const login = async (
     username: string,
@@ -38,7 +41,8 @@ const fetchItems = async (pageIndex: number): Promise<Item[]> => {
         {
             params: {
                 pageIndex,
-            }
+            },
+            headers: getRequestHeaders()
         }
     );
     Item.totalCount = response.data.totalCount;
@@ -47,18 +51,23 @@ const fetchItems = async (pageIndex: number): Promise<Item[]> => {
 
 const fetchItemById = async (id: string): Promise<Item> => {
     const response = await axiosInstance.get<Item>(
-        "/item/" + id
+        "/item/" + id,
+        {
+            headers: getRequestHeaders()
+        }
     );
     return response.data;
 };
 
-const addItem = async (name: string, description: string, startBid: number): Promise<string> => {
+const addItem = async (name: string, description: string): Promise<string> => {
     const response = await axiosInstance.post<string>(
         "/item",
         {
             name,
             description,
-            startBid,
+        },
+        {
+            headers: getRequestHeaders()
         }
     )
     return response.data;
@@ -70,7 +79,11 @@ const makeBid = async (
     bid: number
 ): Promise<string> => {
     const response = await axiosInstance.post<string>(
-        "/item/" + itemId + "/bid/" + bid
+        "/item/" + itemId + "/bid/" + bid,
+        {},
+        {
+            headers: getRequestHeaders()
+        }
     );
     return response.data;
 }
@@ -78,7 +91,10 @@ const makeBid = async (
 
 const fetchSettings = async (user: User): Promise<Settings> => {
     const response = await axiosInstance.get<Settings>(
-        "/user/" + user.username + "/settings"
+        "/user/" + user.username + "/settings",
+        {
+            headers: getRequestHeaders()
+        }
     );
     return response.data;
 }
@@ -87,6 +103,9 @@ const saveSettings = async (settings: Settings, user: User) => {
     const response = await axiosInstance.put(
         "/user/" + user.username + "/settings",
         settings,
+        {
+            headers: getRequestHeaders()
+        }
     );
     return response.data;
 }
@@ -94,6 +113,10 @@ const saveSettings = async (settings: Settings, user: User) => {
 const activateAutoBid = async (itemId: string) => {
     const response = await axiosInstance.post(
         "/activate-auto-bid/" + itemId,
+        {},
+        {
+            headers: getRequestHeaders()
+        }
     );
     return response.data;
 }
@@ -101,6 +124,10 @@ const activateAutoBid = async (itemId: string) => {
 const deactivateAutoBid = async (itemId: string) => {
     const response = await axiosInstance.post(
         "/deactivate-auto-bid/" + itemId,
+        {},
+        {
+            headers: getRequestHeaders()
+        }
     );
     return response.data;
 }

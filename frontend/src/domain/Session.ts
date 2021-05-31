@@ -1,10 +1,8 @@
 export class Session {
     username: string;
-    token: string;
 
-    constructor(username: string, token: string) {
+    constructor(username: string) {
         this.username = username;
-        this.token = token;
     }
 
     isAdmin = (): boolean => this.username === "admin";

@@ -14,12 +14,11 @@ export interface State {
     },
 }
 
-
 export const useStore = defineStore({
     id: "main",
     state: (): State => ({
         publicRoutes: ["login"],
-        session: null,
+        session: loadSession(),
         whereToGoAfterLogin: "",
         currentPage: {
             title: "",
@@ -50,8 +49,9 @@ export const useStore = defineStore({
             this.whereToGoAfterLogin = path;
         },
         async signIn(username: string, password: string): Promise<any> {
-            const token = await services.login(username, password);
-            this.session = new Session(username, token);
+            await services.login(username, password);
+            this.session = new Session(username);
+            localStorage.setItem("username", username);
         },
         async fetchItems(pageIndex: number): Promise<Item[]> {
             const items = await services.fetchItems(pageIndex);
@@ -62,13 +62,14 @@ export const useStore = defineStore({
         },
         logout() {
             this.session = null;
+            localStorage.removeItem("username");
         },
         async fetchItemById(id: string): Promise<Item> {
             const item = await services.fetchItemById(id);
             return Item.fromDataToDomain(item);
         },
-        async addItem(name: string, description: string, startBid: number): Promise<string> {
-            return await services.addItem(name, description, startBid);
+        async addItem(name: string, description: string): Promise<string> {
+            return await services.addItem(name, description);
         },
         async makeBid(itemId: string, bidValue: number): Promise<string> {
             return await services.makeBid(
@@ -91,3 +92,12 @@ export const useStore = defineStore({
         }
     }
 });
+
+
+const loadSession = (): Session | null => {
+    const sessionDataAsString = localStorage.getItem("username");
+    if (!sessionDataAsString) {
+        return null;
+    }
+    return new Session(sessionDataAsString);
+};

@@ -93,7 +93,7 @@
       <div class="flex center-items justify-center">
         <span
             v-if="state.biddingFeedbackMessage"
-            class="text-2xl text-red-700 font-bold"
+            class="text-2xl text-red-700 font-bold text-center my-4"
             data-test-id="make-bid-error-message"
         >
           {{ state.biddingFeedbackMessage }}
@@ -180,15 +180,24 @@ export default {
     );
 
     const currentBidAsString = computed<string>(
-        () => currentBid.value.toString()
+        () => {
+          if (currentBid.value.isNull()) {
+            return "N/A";
+          }
+          return currentBid.value.toString()
+        }
     );
 
     const startBid = computed<string>(
         () => {
           if (state.item.isNull()) {
-            return Money.Null.toString();
+            return "N/A";
           }
-          return state.item.getStartBid().toString();
+          let startBid = state.item.getStartBid();
+          if (startBid.isNull()) {
+            return "N/A"
+          }
+          return startBid.toString();
         }
     );
 

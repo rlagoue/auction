@@ -10,12 +10,14 @@
       {{ menuText }}
     </button>
 
-    <img
-        alt=""
-        data-test-id="logout"
-        src="../assets/images/logout_black_24dp.svg"
-        @click="logout"
-    >
+    <div class="cursor-pointer">
+      <img
+          alt=""
+          data-test-id="logout"
+          src="../assets/images/logout_black_24dp.svg"
+          @click="logout"
+      >
+    </div>
   </div>
 </template>
 

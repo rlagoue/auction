@@ -1,6 +1,6 @@
 <template>
   <div class="flex justify-center items-center h-screen">
-    <div class="flex flex-col items-center justify-center  bg-white w-1/3 card mx-auto">
+    <div class="flex flex-col items-center justify-center bg-white card">
       <div class="grid grid-cols-1 space-y-3">
         <div class="text-center uppercase font-bold text-2xl">
           Login
@@ -20,6 +20,7 @@
             placeholder="username"
             required
             type="text"
+            @keypress.enter="trySubmit"
         >
         <input
             v-model="state.password"
@@ -28,6 +29,7 @@
             placeholder="password"
             required
             type="password"
+            @keypress.enter="trySubmit"
         >
         <button
             class="p-2 border-2 rounder-md bg-green-200 font-bold uppercase"
@@ -67,7 +69,6 @@ export default defineComponent({
       }
       if (state.errors.length === 0) {
         await useStore().signIn(state.username, state.password);
-        localStorage.setItem("username", state.username);
         await router.push("/items-list");
       }
     };
