@@ -11,7 +11,7 @@ describe("Item Details as Admin", () => {
     });
 
     it("display the details of an item", () => {
-        cy.intercept("**/item?pageIndex=1", req => {
+        cy.intercept("**/item?pageIndex=0", req => {
             req.reply(
                 {
                     totalCount: 100,

@@ -72,7 +72,7 @@ export default {
 
     const state = reactive<State>({
       items: [],
-      currentPageIndex: 1,
+      currentPageIndex: 0,
       hasNext: false,
       hasPrevious: false,
       pagesCount: 0,

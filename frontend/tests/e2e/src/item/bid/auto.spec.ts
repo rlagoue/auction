@@ -4,7 +4,7 @@ describe("Auto bid support", () => {
     beforeEach(() => {
         cy.visit("/");
         login("user4");
-        cy.intercept("**/item?pageIndex=1", req => {
+        cy.intercept("**/item?pageIndex=0", req => {
             req.reply(
                 {
                     totalCount: 100,

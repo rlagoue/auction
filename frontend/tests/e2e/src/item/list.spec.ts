@@ -11,7 +11,7 @@ describe("Item Listing as Admin", () => {
     });
 
     it("display the list of item", () => {
-        cy.intercept("**/item?pageIndex=1", req => {
+        cy.intercept("**/item?pageIndex=0", req => {
             req.reply(
                 {
                     totalCount: 100,
@@ -288,7 +288,7 @@ describe("Item Listing as Admin", () => {
     });
 
     it("filter on list items", () => {
-        cy.intercept("**/item?pageIndex=1", req => {
+        cy.intercept("**/item?pageIndex=0", req => {
             req.reply(
                 {
                     totalCount: 100,
