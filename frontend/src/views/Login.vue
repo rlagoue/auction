@@ -67,6 +67,7 @@ export default defineComponent({
       }
       if (state.errors.length === 0) {
         await useStore().signIn(state.username, state.password);
+        localStorage.setItem("username", state.username);
         await router.push("/items-list");
       }
     };
