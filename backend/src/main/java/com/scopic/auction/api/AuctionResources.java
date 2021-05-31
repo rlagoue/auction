@@ -50,12 +50,22 @@ public class AuctionResources extends BaseResources {
     }
 
     @PostMapping("/activate-auto-bid/{itemId}")
-    public void activateAutoBidOnItem(@PathVariable("itemId") String itemId) {
-        userService.activateAutoBidOnItem(getCurrentUsername(), itemId);
+    public String activateAutoBidOnItem(@PathVariable("itemId") String itemId) {
+        try {
+            userService.activateAutoBidOnItem(getCurrentUsername(), itemId);
+        } catch (Throwable e) {
+            return e.getMessage();
+        }
+        return "success";
     }
 
     @PostMapping("/deactivate-auto-bid/{itemId}")
-    public void deactivateAutoBidOnItem(@PathVariable("itemId") String itemId) {
-        userService.deactivateAutoBidOnItem(getCurrentUsername(), itemId);
+    public String deactivateAutoBidOnItem(@PathVariable("itemId") String itemId) {
+        try {
+            userService.deactivateAutoBidOnItem(getCurrentUsername(), itemId);
+        } catch (Throwable e) {
+            return e.getMessage();
+        }
+        return "success";
     }
 }

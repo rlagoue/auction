@@ -92,11 +92,11 @@
       </div>
       <div class="flex center-items justify-center">
         <span
-            v-if="state.biddingFeedbackMessage"
+            v-if="state.feedbackMessage"
             class="text-2xl text-red-700 font-bold text-center my-4"
             data-test-id="make-bid-error-message"
         >
-          {{ state.biddingFeedbackMessage }}
+          {{ state.feedbackMessage }}
         </span>
       </div>
       <table
@@ -112,7 +112,7 @@
         </thead>
         <tbody>
         <tr
-            v-for="bid in state.item.bids"
+            v-for="bid in bids"
             :key="bid.id"
             :data-test-id="bid.user.username"
             class="my-10 py-10"
@@ -146,7 +146,7 @@ import {Currency} from "../../domain/Currency";
 type State = {
   item: Item,
   bidFormDisplayed: boolean,
-  biddingFeedbackMessage: string,
+  feedbackMessage: string,
 }
 
 export default {
@@ -159,7 +159,7 @@ export default {
     const state = reactive<State>({
       item: Item.Null,
       bidFormDisplayed: false,
-      biddingFeedbackMessage: "",
+      feedbackMessage: "",
     });
 
     onBeforeMount(async () => {
@@ -209,7 +209,7 @@ export default {
 
     const {utcDateTimeToLocalString, localDateToUtc} = useDateTimeUtils();
 
-    const clearBiddingFeedbackMessage = () => state.biddingFeedbackMessage = "";
+    const clearBiddingFeedbackMessage = () => state.feedbackMessage = "";
     const makeBid = async () => {
       clearBiddingFeedbackMessage();
       const result = await store.makeBid(itemId, newBid.value);
@@ -230,27 +230,42 @@ export default {
         displayOriginalStateChangedMessage();
         await fetchData();
       } else if (result === "CannotBidManuallyOnItemWithAutoBidActivated") {
-        state.biddingFeedbackMessage = "Please Deactivate the Auto Bid for this item, Then you will be able to bid manually again";
+        state.feedbackMessage = "Please Deactivate the Auto Bid for this item, Then you will be able to bid manually again";
         await fetchData();
       } else if (result === "CannotActivateAutoBidWhenBeingLeadingBidder") {
-        state.biddingFeedbackMessage = "As long you are the highest bidder on this item, you are not able to activate autobid on it.";
+        state.feedbackMessage = "As long you are the highest bidder on this item, you are not able to activate autobid on it.";
         await fetchData();
       }
 
     };
     const displayOutbiddedErroMessage = () =>
-        state.biddingFeedbackMessage = "!!!You have been outbidded!!!";
+        state.feedbackMessage = "!!!You have been outbidded!!!";
     const displayOriginalStateChangedMessage = () =>
-        state.biddingFeedbackMessage = "!!! The state of the item has changed, please check the new state before your next att!!!";
+        state.feedbackMessage = "!!! The state of the item has changed, please check the new state before your next att!!!";
     const hideBidForm = () => state.bidFormDisplayed = false;
     const activateAutoBid = async () => {
-      await store.activateAutoBid(itemId);
+      const message = await store.activateAutoBid(itemId);
       state.item.isAutoBidActive = true;
+      if (message === "CannotActivateAutoBidWhenBeingLeadingBidder") {
+        state.feedbackMessage = "You are leading the bid on this item. Therefore it is not possible for you to activate autobidding";
+      }
     };
     const deactivateAutoBid = async () => {
-      await store.deactivateAutoBid(itemId);
+      const message = await store.deactivateAutoBid(itemId);
       state.item.isAutoBidActive = false;
+      if (message === "CannotDeactivateAutoBidOnItemWhenLeading") {
+        state.feedbackMessage = "You are leading the bid on this item. Therefore it is not possible for you to deactivate autobidding";
+      }
     };
+
+    const bids = computed<Bid[]>(() => state.item.bids.sort((a, b) => {
+      if (b.time > a.time) {
+        return 1;
+      } else if (b.time < a.time) {
+        return -1;
+      }
+      return 0;
+    }))
 
     return {
       state,
@@ -262,6 +277,7 @@ export default {
       makeBid,
       activateAutoBid,
       deactivateAutoBid,
+      bids,
     }
   }
 }
